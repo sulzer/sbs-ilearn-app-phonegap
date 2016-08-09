@@ -22,8 +22,5 @@ angular.module('mm', ['ionic', 'ngCordova', 'angular-md5', 'pascalprecht.transla
 		if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
 			window.cordova.plugins.Keyboard.hideKeyboardAccessoryBar(false);
 		}
-		if (window.StatusBar) {
-			//StatusBar.styleDefault();
-		}
 	});
 });
