@@ -5,7 +5,7 @@
         id        = "edu.sbs.ilearnapp"
         versionCode = "1"
         version   = "3.1.2">
-    <name>SBS iLearn App</name>
+    <name>SBS iLearn</name>
 
     <description>
         The SBS iLearn App enables you to access the SBS iLearn portal from your Android or iOS device.  Browse the content of your courses (even when you are offline), participate in course activities, receive push notifications, quickly find and contact other people in your course, upload files and view your course grades.
