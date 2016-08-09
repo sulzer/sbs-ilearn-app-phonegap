@@ -1,6 +1,6 @@
 {
     "about": "حول",
-    "appname": "SBS iLearn App {{version}}",
+    "appname": "تطبيق مودل {{version}}",
     "cacheexpirationtime": "وقت انتهاء صلاحية ذاكرة التخزين المؤقت (بالميلي ثانية)",
     "currentlanguage": "اللغة الحالية",
     "deletesitefiles": "هل أنت متأكد أنك تريد حذف الملفات التي تم تنزيلها من هذا الموقع  '{{sitename}}'؟",
