@@ -52,10 +52,14 @@
     <feature name="StatusBar">
         <param name="ios-package" value="CDVStatusBar" onload="true"/>
     </feature>
+
+	<gap:config-file platform="ios" parent="UIViewControllerBasedStatusBarAppearance">
+		<false/>
+	</gap:config-file>
 	
-	<preference name="StatusBarOverlaysWebView" value="false"/>
-	<preference name="StatusBarBackgroundColor" value="#0a4797"/>
-	<preference name="StatusBarStyle" value="blackopaque" />
+	<gap:config-file platform="ios" parent="UIStatusBarStyleLightContent">
+		<true/>
+	</gap:config-file>
 
     <preference name="AndroidPersistentFileLocation"    value="Compatibility" />
     <preference name="iosPersistentFileLocation" value="Compatibility" />
