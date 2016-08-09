@@ -2,12 +2,11 @@
   color: $base-color;
 }
 
- .bar-side-menu {
-   background-color: #0a4797;
- }
- 
+
+ .bar-side-menu,
+ .bar-header,
  .bar-content {
-   background-color: #0a4797;
+   background-color: #0a4797 !important;
  }
  
  .button.button-positive {
