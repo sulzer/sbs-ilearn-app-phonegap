@@ -3,8 +3,8 @@
         xmlns:gap = "http://phonegap.com/ns/1.0"
         xmlns:android = "http://schemas.android.com/apk/res/android"
         id        = "edu.sbs.ilearnapp"
-        versionCode = "1"
-        version   = "3.1.2">
+        versionCode = "19"
+        version   = "1.1.312">
     <name>SBS iLearn</name>
 
     <description>
@@ -16,11 +16,11 @@
     </author>
 
     <gap:config-file platform="ios" parent="CFBundleShortVersionString">
-        <string>3.1.2</string>
+        <string>1.1.312</string>
     </gap:config-file>
 	
     <gap:config-file platform="ios" parent="CFBundleVersion">
-        <string>201608101700</string>
+        <string>201608241700</string>
     </gap:config-file>
 
     <gap:platform name="ios" />
@@ -130,7 +130,7 @@
     <gap:plugin name="cordova-plugin-splashscreen" source="npm" />
 
     <gap:plugin name="phonegap-plugin-push" source="npm" version="1.7.0">
-        <param name="SENDER_ID" value="learn-moodle-1159" />
+        <param name="SENDER_ID" value="908958224806" />
     </gap:plugin>
     <gap:plugin name="net.tunts.webintent" />
     <gap:plugin name="cordova-plugin-customurlscheme" source="npm">
