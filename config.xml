@@ -2,10 +2,17 @@
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
         xmlns:android = "http://schemas.android.com/apk/res/android"
+<<<<<<< HEAD
         id        = "com.moodle.moodlemobile"
         versionCode = "20160"
         version   = "3.2.0">
     <name>Moodle Mobile</name>
+=======
+        id        = "edu.sbs.ilearnapp"
+        versionCode = "19"
+        version   = "1.1.312">
+    <name>SBS iLearn</name>
+>>>>>>> Updated GCM id and versioning
 
     <description>
         Moodle Mobile official app
@@ -16,7 +23,15 @@
     </author>
 
     <gap:config-file platform="ios" parent="CFBundleShortVersionString">
+<<<<<<< HEAD
         <string>3.2.0</string>
+=======
+        <string>1.1.312</string>
+    </gap:config-file>
+	
+    <gap:config-file platform="ios" parent="CFBundleVersion">
+        <string>201608241700</string>
+>>>>>>> Updated GCM id and versioning
     </gap:config-file>
 
     <gap:platform name="ios" />
@@ -126,7 +141,11 @@
     <gap:plugin name="cordova-plugin-splashscreen" source="npm" />
 
     <gap:plugin name="phonegap-plugin-push" source="npm" version="1.7.0">
+<<<<<<< HEAD
         <param name="SENDER_ID" value="694767596569" />
+=======
+        <param name="SENDER_ID" value="908958224806" />
+>>>>>>> Updated GCM id and versioning
     </gap:plugin>
     <gap:plugin name="cordova-plugin-customurlscheme" source="npm">
         <param name="URL_SCHEME" value="moodlemobile" />
