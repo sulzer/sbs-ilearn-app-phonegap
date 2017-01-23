@@ -16,7 +16,7 @@
  */
 
 // Bar content.
-$bar-content-bg: #0a4797 !default;
+$bar-content-bg: #f70 !default;
 $bar-content-border: transparent !default;
 $bar-content-text: #fff !default;
 
@@ -39,8 +39,11 @@ $completion-img-width: 24px !default;
 // Disabled items.
 $item-disabled-color: #999 !default;
 
-// Warnings (red).
-$mm-warning-color: #c00 !default;
+// Warnings (energized).
+$mm-warning-color: $energized !default;
+
+// Errors (red).
+$mm-error-color: #c00 !default;
 
 // Timer variables.
 $mm-timer-warn-color:     #f00 !default;
@@ -53,6 +56,41 @@ $mm-text-with-icon-height: 22px !default;
 // Smaller button icon.
 $mm-button-icon-small-height: 22px !default;
 
+// Required inputs asterisk color.
+$mm-input-required-asterisk-color: #ff4136 !default;
+
+/**
+ * App Branding
+ */
+.mm-bglogo {
+  background-color: white; /* Change this to add a bg image or change color */
+  background-repeat: no-repeat;
+  background-position: center center;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.mm-logo {
+  background-image: url('../img/moodle.png'); /* Change logo here */
+  background-repeat: no-repeat;
+  background-position: center center;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  text-align: center;
+}
+
+.mm-logo:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-top: 120px; /* Change this to place spinner under the logo (usually double of the logo size) */
+}
+
 /**
  * Styles revert.
  */
@@ -64,6 +102,19 @@ em {
 /**
  * Styles.
  */
+
+.mm-big   { font-size: 115%; }
+
+.item-stacked-label {
+  background-color: $item-default-bg;
+}
+
+.item-stacked-label, .item-checkbox {
+  .input-label {
+    max-width: 100%;
+    width: 100%;
+  }
+}
 
 // Default bar.
 .bar-content {
@@ -78,6 +129,9 @@ em {
 // This is done for accessibility reasons when a heading is semantically incorrect.
 .item .item-heading {
   @extend h2;
+  &.padding {
+    @extend .padding;
+  }
 }
 
 .item.item-text-wrap .item-heading {
@@ -133,9 +187,13 @@ em {
   &.item-icon-left {
     padding-left: 35px;
 
-    .icon {
+    .icon:first-child {
       left: 4px;
     }
+  }
+
+  &.item-icon-right {
+    @extend .item-icon-right;
   }
 }
 
@@ -153,14 +211,24 @@ em {
   .item-note {
     color: $item-message-note-text;
     font-size: $item-message-note-font-size;
-    margin-left: 10px;
+    margin-left: 20px;
   }
+
+  mm-format-text > p:only-child {
+    display: inline-block;
+  }
+}
+
+.item-message .item-content {
+  background-color: $item-message-bg;
+  padding: 0;
 }
 
 // Defines when an item-message is the user's.
 .item-message-mine {
   background-color: $item-message-mine-bg;
   float: right;
+  max-width: 80%;
 
   .spinner {
     float: right;
@@ -176,10 +244,76 @@ em {
   }
 }
 
+.item-message-mine .item-content {
+  background-color: transparent;
+  padding: 0;
+}
+
 // Defines a "disabled" item.
 .item.item-disabled,
 .platform-android .item.item-disabled {
   color: $item-disabled-color;
+}
+
+// Avoid adding too much padding.
+.item-complex .item-checkbox .item-content {
+  padding: 0;
+}
+
+// Large centered avatar.
+.item-avatar-center {
+    @extend .item-avatar;
+    text-align: center;
+    padding-left: 16px;
+
+    &.item-complex .item-content {
+        text-align: center;
+        padding-left: 49px;
+    }
+
+    > img:first-child,
+    &.item-complex .item-content > img:first-child,
+    img.avatar {
+        position: static;
+        width: 100px;
+        height: 100px;
+        max-width: 100px;
+        max-height: 100px;
+        margin-bottom: 10px;
+        border-radius : 50%;
+        padding: 4px;
+        border: 1px solid #ddd;
+
+        &.avatar-full {
+          border-radius: 2%;
+          border: 0;
+          max-width: 100%;
+          max-height: 200px;
+          width: auto;
+          height: auto;
+        }
+    }
+}
+
+/* Show buttons as tabs */
+.tabs.tabs-free {
+  position: initial;
+  background: transparent;
+  border: 0;
+  margin-bottom: 0;
+  margin-top: 10px;
+
+  .tab-item {
+    margin-top: -1px;
+    max-width: initial;
+    font-size: 120%;
+
+    &.active, &.activated {
+      margin-top: -1px;
+      border-top-width: 0;
+      border-bottom-width: 3px;
+    }
+  }
 }
 
 .user-with-avatar {
@@ -189,6 +323,7 @@ em {
   padding: 4px;
   padding-left: 56px;
   min-height: 48px;
+  text-decoration: none;
 }
 .user-with-avatar > img:first-child {
     position: absolute;
@@ -269,6 +404,24 @@ button.item.item-button-right {
   }
 }
 
+.item-button-right > .buttons.buttons-vertical {
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.button.button-block {
+  line-height: 28px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+
+  .icon:before,
+  &.icon:before,
+  &.icon-left:before,
+  &.icon-right:before {
+    line-height: 28px;
+  }
+}
+
 /**
  * Core directives.
  */
@@ -308,11 +461,24 @@ mm-format-text, *[mm-format-text] {
 }
 
 .mm-loading-content {
-  height: 100%;
+  padding-bottom: 1px; /* This makes height be real */
 }
 
 mm-loading.mm-loading-noheight .mm-loading-content {
   height: auto;
+}
+
+mm-loading.mm-loading-center {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: inline-block;
+
+  .mm-loading-container {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 // Align ion-spinner right
@@ -394,15 +560,42 @@ mm-navigation-bar {
   padding: $item-padding;
 }
 
-// Red color for paragraphs.
-p.mm-warning {
-  color: $mm-warning-color;
+p.mm-error {
+  color: $mm-error-color;
+}
+
+.mm-warning {
+  border-bottom: 3px solid $mm-warning-color;
+  padding: $card-padding;
+  box-shadow: $card-box-shadow;
+  margin: 20px 10px;
+  background-color: #fff;
+
+  i.icon:before {
+      color: $mm-warning-color;
+      font-size: 125%;
+  }
 }
 
 // Extra attributes to ionic classes to force frames via directive 100% height.
-
 .scroll {
-  height: 100%;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+
+  // Fix too much padding when a card is on top.
+  &.padding>.card:first-child,
+  &.padding .mm-loading-content>.card:first-child,
+  &.padding .scroll-refresher>.card:first-child {
+    margin-top: $content-padding;
+  }
+}
+
+// Fix padding for modal.
+.padding .scroll {
+  padding: $content-padding;
 }
 
 .iframe-wrapper {
@@ -491,6 +684,31 @@ mm-timer {
   padding: 0;
 }
 
+.item-input.item-stacked-label {
+  padding: 16px;
+
+  .item-input-wrapper.item-select {
+    display: block;
+
+    select {
+      background: transparent;
+      padding: 12px;
+      margin: 0;
+      width: 100%;
+      position: relative;
+      max-width: 100%;
+      direction: ltr;
+      line-height: 14px;
+    }
+  }
+}
+
+.item-input-inset .item-input-wrapper input,
+.item-input .item-input-wrapper input {
+  width: 100%;
+  background: transparent;
+}
+
 .button.mm-button-icon-small {
   padding: 0 3px;
   min-height: $mm-button-icon-small-height;
@@ -528,6 +746,7 @@ mm-format-text {
   border-bottom: 1px solid #ddd;
   margin-bottom: 10px;
   padding: 5px;
+  background-color: white;
 
   input {
     font-size: 20px;
@@ -539,6 +758,25 @@ mm-format-text {
 .item-noborder {
   border: 0;
   padding: 0;
+}
+
+.padding .mm-searchbox .item-input-inset {
+  padding-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.item.mm-course-handlers {
+  padding: 6px 2px;
+
+  .tabs {
+    background: white;
+  }
+
+  .mm-loading-course-handlers {
+    padding: 7px;
+    padding-bottom: 6px;
+  }
 }
 
 /**
@@ -709,6 +947,189 @@ mm-format-text {
   }
 }
 
+// Disable textarea copy to prevent errors in iOS.
+
+.previous-input-focus.mm-textarea, .cloned-text-input + textarea.mm-textarea {
+  width: 100%;
+  position: relative !important;
+  left: 0px;
+}
+
+textarea.cloned-text-input{
+  display: none;
+}
+
+// InApp notifications.
+
+.mm-inapp-notification-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 11;
+  width: 100%;
+  opacity: 0;
+  margin-top: -130px;
+  -webkit-transition: 0.5s all ease-in-out;
+  transition: 0.5s all ease-in-out;
+
+  &.active {
+    opacity: 1;
+    margin-top: 0;
+  }
+
+  &.hide {
+    opacity: 0;
+    margin-top: -130px;
+    display: block;
+    pointer-events: none;
+  }
+
+  .mm-inapp-notification {
+    position: static;
+    height: auto;
+    width: auto;
+    max-width: 400px;
+    margin-left: auto  !important;
+    margin-right: auto  !important;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    padding: 2px 0;
+
+    .scroll-content, .scroll {
+      position: relative;
+      top: auto;
+      bottom: auto;
+      left: auto;
+      right: auto;
+    }
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  .mm-inapp-notification-backdrop .mm-inapp-notification {
+    margin-left: 6px !important;
+    margin-right: 6px !important;
+  }
+}
+
+// Toggles with relative positioning.
+
+.item-toggle-relative {
+  .item.item-toggle {
+    padding: 0px;
+    margin-top: 0px;
+    margin-left: 0px;
+
+    .toggle {
+      position: relative;
+      top: 0px;
+      right: 0px;
+    }
+  }
+}
+
+// Spinner aligned right.
+
+ion-spinner.mm-spinner-right {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+
+.item-toggle.has-spinner-right {
+  .mm-spinner-right {
+    top: ($item-padding / 2) + 2; // Same top as toggle.
+    right: 5px;
+  }
+
+  .toggle {
+    right: $item-padding + 19px;
+  }
+}
+
+// If the item-toggle is nested inside another item then the spinner can be aligned to the right.
+.item .item-toggle.has-spinner-right {
+  .mm-spinner-right {
+    right: 0px;
+  }
+
+  .toggle {
+    right: $item-padding + 14px;
+  }
+}
+
+.item-borderless.item-toggle {
+  padding-left: 0;
+  padding-bottom: 5px;
+  padding-top: 5px;
+
+  .toggle {
+    top: 0;
+  }
+}
+
+// Video subtitles.
+.platform-ios video::cue {
+  font-size: 12px;
+}
+// Add note below an input.
+.item .mm-input-footnote {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-style: italic;
+}
+
+// Mark input as required styles.
+.mm-input-required-asterisk, .icon.mm-input-required-asterisk, i.icon.mm-input-required-asterisk {
+  color: $mm-input-required-asterisk-color !important;
+  font-size: 8px;
+  padding-left: 4px;
+  line-height: 100%;
+  vertical-align: top;
+}
+
+// Allow placeholders in date inputs.
+.platform-android, .platform-ios {
+  input[type="date"], input[type="datetime"], input[type="datetime-local"], input[type="time"] {
+    &.ng-empty:before {
+      color: $input-color-placeholder;
+      content: attr(placeholder);
+    }
+  }
+}
+
+/**
+ * Form validation.
+ */
+
+.item.mm-input-has-errors, .item .mm-input-has-errors {
+  input {
+    border-bottom: 1px solid $mm-error-color;
+  }
+  .checkbox-icon, textarea {
+    border: 1px solid $mm-error-color;
+  }
+  &.mm-item-has-rich-text-editor, .mm-item-has-rich-text-editor {
+    .mm-rich-text-editor-container {
+      border: 1px solid $mm-error-color;
+    }
+  }
+}
+
+.mm-input-error-container {
+  margin: 0;
+
+  .mm-input-error {
+    padding: 4px;
+    color: $mm-error-color;
+    font-size: 12px;
+  }
+}
+
+// Ionic overrides italic font-style, apply it again.
+i, cite, em, var, address, dfn {
+    font-style: italic;
+}
+
 
 .item.item-button-right .badge.mm-course-download{
   right: $spinner-width + $item-padding;
@@ -723,10 +1144,27 @@ input.mm-fileuploader-picker {
   outline: none;
 }
 
-#mm-settings-languagelabel {
-  color: $base-color;
-}
 
+.mm-mm_login_sites {
+  .item-thumbnail-left .item-content {
+    padding-top: 16px;
+  }
+
+  .avatar {
+    margin: 0;
+    width: 80px;
+    height: 80px;
+    max-width: 80px;
+    max-height: 80px;
+    border-radius : 50%;
+    padding: 4px;
+    border: 1px solid #ddd;
+  }
+
+  .card {
+    margin: 15px 10px;
+  }
+}
 
 $mm-question-correct-color:         #468847 !default;
 $mm-question-incorrect-color:       #b94a48 !default;
@@ -757,6 +1195,7 @@ li.mm-question-answer-correct,
 .mm-question-comment,
 .mm-question-comment p {
   color: $mm-question-correct-color;
+  -webkit-text-fill-color: $mm-question-correct-color; /* Override iOS / Android font color change */
   background-color: #dff0d8;
 }
 
@@ -782,6 +1221,7 @@ li.mm-question-answer-incorrect,
 .mm-question-incorrect,
 .mm-question-incorrect p {
   color: $mm-question-incorrect-color;
+  -webkit-text-fill-color: $mm-question-incorrect-color; /* Override iOS / Android font color change */
   background-color: #f2dede;
 }
 
@@ -789,6 +1229,11 @@ li.mm-question-answer-incorrect,
 .mm-question-answer-incorrect .checkbox input:disabled:checked + .checkbox-icon:before {
   background-color: $mm-question-incorrect-color;
   border-color: $mm-question-incorrect-color;
+}
+
+.mm-question-answer-correct input:disabled,
+.mm-question-answer-incorrect input:disabled {
+  opacity: 1;
 }
 
 .mm-question-feedback-container {
@@ -846,6 +1291,10 @@ li.mm-question-answer-incorrect,
   color: $mm-question-warning-color;
 }
 
+#mm-settings-languagelabel {
+  color: $base-color;
+}
+
 // Variables.
 $bar-side-menu-height: 80px !default;
 $bar-side-menu-color: $bar-content-bg !default;
@@ -873,6 +1322,12 @@ $bar-side-menu-text-color: $bar-content-text !default;
   top: $bar-side-menu-height;
 }
 
+
+.foreground-ion-edit.ion-edit:before {
+    position: relative;
+    left: 105px;
+    bottom: 15px;
+}
 
 /* - User grades table (most of it extracted from MM1)
 -------------------------------------------------------------------------- */
@@ -1014,9 +1469,52 @@ $mma-messages-date-badge: "stable" !default;
   }
 }
 
+.mma-messages-send-message-bar {
+  width: 100%;
+}
+.mm-site_messages-discussion {
+  .list-left-editing .item-message.item-left-editable,
+  .item-left-editing.item-message.item-left-editable {
+    max-width: calc(80% + 35px);
+    -moz-transition: max-width ease-in-out 125ms;
+    -o-transition: max-width ease-in-out 125ms;
+    -webkit-transition: max-width ease-in-out 125ms;
+    transition: max-width ease-in-out 125ms;
+  }
+
+  .list-left-editing .item-left-editable .item-content,
+  .item-left-editing.item-left-editable .item-content {
+    -webkit-transform: none;
+    transform: none;
+    padding-left: 35px;
+    -moz-transition: padding-left ease-in-out 125ms;
+    -o-transition: padding-left ease-in-out 125ms;
+    -webkit-transition: padding-right ease-in-out 125ms;
+    transition: padding-left ease-in-out 125ms;
+    background-color: transparent;
+  }
+
+  .list-left-editing .item-left-editable.item-message-mine .item-content,
+  .item-left-editing.item-left-editable.item-message-mine .item-content {
+    padding-left: 0;
+    padding-right: 35px;
+    -moz-transition: padding-right ease-in-out 125ms;
+    -o-transition: padding-right ease-in-out 125ms;
+    -webkit-transition: right-right ease-in-out 125ms;
+    transition: padding-right ease-in-out 125ms;
+  }
+
+  .item-message-mine .item-left-edit.visible.active {
+    right: 0;
+    left: initial;
+  }
+}
+
+
 $mma-mod-assign-warning-color:      #c00 !default;
 
-.mm-site_mod_assign {
+.mm-site_mod_assign,
+.mm-site_mod_assign-submission {
 
   div.latesubmission {
     background-color: #efcfcf;
@@ -1292,6 +1790,7 @@ $mma-chat-notice-badge: "stable" !default;
   span {
     @extend .badge;
     @extend .badge-#{$mma-chat-notice-badge};
+    white-space: normal;
   }
 }
 
@@ -1350,6 +1849,16 @@ $mma-chat-notice-badge: "stable" !default;
     border-width: $item-border-width;
     border-style: solid;
 }
+
+.mm-site_mod_forum-discussion .card.highlight .item.item-heading {
+    background-color: $stable;
+    font-weight: bold;
+
+    h2 {
+        font-weight: bold;
+    }
+}
+
 
 $mma-mod-quiz-warning-color:      #c00 !default;
 $mma-mod-quiz-highlight-color:    #d9edf7 !default;
@@ -1579,6 +2088,108 @@ $mma-qbehaviour-deferredcbm-confident-color:    #c00 !default;
 	font-size: 16px;
 }
 
+// Style ddmarker content a bit. Almost all these styles are copied from Moodle.
+.mma-qtype-ddmarker-container {
+  mm-loading {
+    position: absolute;
+    left: 50%;
+  }
+
+  .qtext {
+    margin-bottom: 0.5em;
+    display: block;
+  }
+
+  div.droparea img  {
+    border: 1px solid #000;
+    max-width: 100%;
+  }
+
+  .draghome img, .draghome span {
+    visibility: hidden;
+  }
+
+  .dragitems .dragitem {
+    cursor: pointer;
+    position: absolute;
+    z-index: 2;
+  }
+
+  .dropzones {
+    position: absolute;
+  }
+  .dropzones svg {
+    z-index: 3;
+  }
+
+  .dragitem.beingdragged .markertext {
+    z-index: 5;
+    box-shadow: 3px 3px 4px #000;
+  }
+  .dragitems .draghome {
+    margin: 10px;
+    display: inline-block;
+  }
+
+  .dragitems.readonly .dragitem {
+    cursor: auto;
+  }
+  div.ddarea {
+    text-align: center;
+  }
+  div.ddarea .markertexts {
+    min-height: 80px;
+    position: absolute;
+    text-align: left;
+  }
+  .dropbackground {
+    margin: 0 auto;
+  }
+
+  div.dragitems div.draghome, div.dragitems div.dragitem,
+  div.draghome, div.drag {
+    font: 13px/1.231 arial,helvetica,clean,sans-serif;
+  }
+  div.dragitems span.markertext,
+  div.markertexts span.markertext{
+    margin: 0 5px;
+    z-index: 2;
+    background-color: white;
+    border: 2px solid black;
+    padding: 5px;
+    display: inline-block;
+    zoom: 1;
+    border-radius: 10px;
+  }
+  div.markertexts span.markertext {
+    z-index: 3;
+    background-color: yellow;
+    border-style: solid;
+    border-width: 2px;
+    border-color: khaki;
+    position: absolute;
+  }
+  span.wrongpart {
+    background-color: yellow;
+    border-style: solid;
+    border-width: 2px;
+    border-color: khaki;
+    padding: 5px;
+    border-radius: 10px;
+    filter: alpha(opacity=60);
+    opacity: 0.6;
+    margin: 5px;
+    display: inline-block;
+  }
+  div.dragitems img.target {
+    position: absolute;
+    left: -7px; /* This must be half the size of the target image, minus 0.5. */
+    top: -7px;  /* In other words, this works for a 15x15 cross-hair. */
+  }
+  div.dragitems div.draghome img.target {
+    display: none;
+  }
+}
 // Style ddimageortext content a bit. Almost all these styles are copied from Moodle.
 .mma-qtype-ddimageortext-container {
   mm-loading {
@@ -1683,108 +2294,6 @@ $mma-qbehaviour-deferredcbm-confident-color:    #c00 !default;
   .drag.beingdragged {
     z-index: 3;
     box-shadow: 3px 3px 4px #000;
-  }
-}
-// Style ddmarker content a bit. Almost all these styles are copied from Moodle.
-.mma-qtype-ddmarker-container {
-  mm-loading {
-    position: absolute;
-    left: 50%;
-  }
-
-  .qtext {
-    margin-bottom: 0.5em;
-    display: block;
-  }
-
-  div.droparea img  {
-    border: 1px solid #000;
-    max-width: 100%;
-  }
-
-  .draghome img, .draghome span {
-    visibility: hidden;
-  }
-
-  .dragitems .dragitem {
-    cursor: pointer;
-    position: absolute;
-    z-index: 2;
-  }
-
-  .dropzones {
-    position: absolute;
-  }
-  .dropzones svg {
-    z-index: 3;
-  }
-
-  .dragitem.beingdragged .markertext {
-    z-index: 5;
-    box-shadow: 3px 3px 4px #000;
-  }
-  .dragitems .draghome {
-    margin: 10px;
-    display: inline-block;
-  }
-
-  .dragitems.readonly .dragitem {
-    cursor: auto;
-  }
-  div.ddarea {
-    text-align: center;
-  }
-  div.ddarea .markertexts {
-    min-height: 80px;
-    position: absolute;
-    text-align: left;
-  }
-  .dropbackground {
-    margin: 0 auto;
-  }
-
-  div.dragitems div.draghome, div.dragitems div.dragitem,
-  div.draghome, div.drag {
-    font: 13px/1.231 arial,helvetica,clean,sans-serif;
-  }
-  div.dragitems span.markertext,
-  div.markertexts span.markertext{
-    margin: 0 5px;
-    z-index: 2;
-    background-color: white;
-    border: 2px solid black;
-    padding: 5px;
-    display: inline-block;
-    zoom: 1;
-    border-radius: 10px;
-  }
-  div.markertexts span.markertext {
-    z-index: 3;
-    background-color: yellow;
-    border-style: solid;
-    border-width: 2px;
-    border-color: khaki;
-    position: absolute;
-  }
-  span.wrongpart {
-    background-color: yellow;
-    border-style: solid;
-    border-width: 2px;
-    border-color: khaki;
-    padding: 5px;
-    border-radius: 10px;
-    filter: alpha(opacity=60);
-    opacity: 0.6;
-    margin: 5px;
-    display: inline-block;
-  }
-  div.dragitems img.target {
-    position: absolute;
-    left: -7px; /* This must be half the size of the target image, minus 0.5. */
-    top: -7px;  /* In other words, this works for a 15x15 cross-hair. */
-  }
-  div.dragitems div.draghome img.target {
-    display: none;
   }
 }
 // Style ddwtos content a bit. Almost all these styles are copied from Moodle.
