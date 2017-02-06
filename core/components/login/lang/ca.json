@@ -15,7 +15,7 @@
     "invalidaccount": "Verifiqueu el vostre nom d'usuari/ària i contrasenya o demaneu a l'administració de Moodle que comprovi la configuració del lloc.",
     "invalidmoodleversion": "La versió de Moodle no és vàlida. Cal com a mínim la versió 2.4.",
     "invalidsite": "L'URL del lloc no és vàlid.",
-    "localmobileunexpectedresponse": "Les característiques addicionals de Moodle Mobile han tornat una resposta inesperada, us heu d'autenticar fent servir el servei estàndard de Mobile.",
+    "localmobileunexpectedresponse": "Les característiques addicionals de SBS iLearn han tornat una resposta inesperada, us heu d'autenticar fent servir el servei estàndard de Mobile.",
     "login": "Entra",
     "loginbutton": "Inicia sessió",
     "logininsiterequired": "Heu d'entrar al lloc a través d'una finestra del navegador.",
