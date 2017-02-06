@@ -15,7 +15,7 @@
     "invalidaccount": "Zkontrolujte si prosím své přihlašovací údaje nebo se obraťte na správce webu, aby zkontroloval nastavení.",
     "invalidmoodleversion": "Neplatná verze Moodle. Minimální potřebná verze je:",
     "invalidsite": "Adresa URL stránky je chybná",
-    "localmobileunexpectedresponse": "Kontrola rozšířených vlastností Moodle Mobile vrátil neočekávanou odezvu, budete ověřen pomocí standardních služeb mobilu .",
+    "localmobileunexpectedresponse": "Kontrola rozšířených vlastností SBS iLearn vrátil neočekávanou odezvu, budete ověřen pomocí standardních služeb mobilu .",
     "login": "Přihlásit se",
     "loginbutton": "Přihlásit se!",
     "logininsiterequired": "Váš Moodlu vás nutí k přihlášení pomocí prohlížeče. Nová instance prohlížeče otevře přesměrování na vaše stránky Moodle.",
