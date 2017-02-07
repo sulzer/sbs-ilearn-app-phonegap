@@ -305,6 +305,29 @@ angular.module('mm.addons.mod_forum')
     };
 
     /**
+     * Get all course forums.
+     *
+     * @module mm.addons.mod_forum
+     * @ngdoc method
+     * @name $mmaModForum#getCourseForums
+     * @param {Number} courseId Course ID.
+     * @param {String} [siteId] Site ID. If not defined, current site.
+     * @return {Promise}        Promise resolved when the forums are retrieved.
+     */
+    self.getCourseForums = function(courseId, siteId) {
+        return $mmSitesManager.getSite(siteId).then(function(site) {
+            var params = {
+                    courseids: [courseId]
+                },
+                preSets = {
+                    cacheKey: getForumDataCacheKey(courseId)
+                };
+
+            return site.read('mod_forum_get_forums_by_courses', params, preSets);
+        });
+    };
+
+    /**
      * Get a forum by course module ID.
      *
      * @module mm.addons.mod_forum
@@ -316,23 +339,13 @@ angular.module('mm.addons.mod_forum')
      * @return {Promise}        Promise resolved when the forum is retrieved.
      */
     self.getForum = function(courseId, cmId, siteId) {
-        siteId = siteId || $mmSite.getId();
-        return $mmSitesManager.getSite(siteId).then(function(site) {
-            var params = {
-                    courseids: [courseId]
-                },
-                preSets = {
-                    cacheKey: getForumDataCacheKey(courseId)
-                };
-
-            return site.read('mod_forum_get_forums_by_courses', params, preSets).then(function(forums) {
-                for (var x in forums) {
-                    if (forums[x].cmid == cmId) {
-                        return forums[x];
-                    }
+        return self.getCourseForums(courseId, siteId).then(function(forums) {
+            for (var x in forums) {
+                if (forums[x].cmid == cmId) {
+                    return forums[x];
                 }
-                return $q.reject();
-            });
+            }
+            return $q.reject();
         });
     };
 
@@ -637,6 +650,25 @@ angular.module('mm.addons.mod_forum')
                 forumid: id
             };
             return $mmSite.write('mod_forum_view_forum', params);
+        }
+        return $q.reject();
+    };
+
+    /**
+     * Report a forum discussion as being viewed.
+     *
+     * @module mm.addons.mod_forum
+     * @ngdoc method
+     * @name $mmaModForum#logDiscussionView
+     * @param {String} id Discussion ID.
+     * @return {Promise}  Promise resolved when the WS call is successful.
+     */
+    self.logDiscussionView = function(id) {
+        if (id) {
+            var params = {
+                discussionid: id
+            };
+            return $mmSite.write('mod_forum_view_forum_discussion', params);
         }
         return $q.reject();
     };
