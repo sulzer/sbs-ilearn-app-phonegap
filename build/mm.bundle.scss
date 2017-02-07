@@ -1325,6 +1325,14 @@ mm-format-text[max-height], *[mm-format-text][max-height] {
   }
 }
 
+
+.item.item-button-right .badge.mm-course-download{
+  right: $spinner-width + $item-padding;
+}
+
+.mm-course-module-handler mm-format-text + mm-format-text {
+    margin-top: 16px;
+}
 input.mm-fileuploader-picker {
   position: absolute;
   top: 0;
@@ -1335,14 +1343,6 @@ input.mm-fileuploader-picker {
   outline: none;
 }
 
-
-.item.item-button-right .badge.mm-course-download{
-  right: $spinner-width + $item-padding;
-}
-
-.mm-course-module-handler mm-format-text + mm-format-text {
-    margin-top: 16px;
-}
 /* - User grades table (most of it extracted from MM1)
 -------------------------------------------------------------------------- */
 .mm-grades-container {
