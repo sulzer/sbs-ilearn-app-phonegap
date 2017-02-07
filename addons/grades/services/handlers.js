@@ -21,7 +21,8 @@ angular.module('mm.addons.grades')
  * @ngdoc service
  * @name $mmaGradesHandlers
  */
-.factory('$mmaGradesHandlers', function($mmaGrades, $mmaCoursesGrades, $state, $mmUtil, $mmContentLinksHelper, mmCoursesAccessMethods) {
+.factory('$mmaGradesHandlers', function($mmGrades, $mmaCoursesGrades, $state, $mmUtil, $mmContentLinksHelper,
+            mmCoursesAccessMethods, mmUserProfileHandlersTypeNewPage) {
 
     var self = {},
         viewGradesEnabledCache = {}; // We use a "cache" to decrease network usage.
@@ -72,7 +73,7 @@ angular.module('mm.addons.grades')
          * @return {Promise} Promise resolved with true if handler is enabled, false otherwise.
          */
         self.isEnabled = function() {
-            return $mmaGrades.isPluginEnabled();
+            return $mmGrades.isPluginEnabled();
         };
 
         /**
@@ -93,7 +94,7 @@ angular.module('mm.addons.grades')
                 return navOptions.grades;
             }
 
-            return $mmaGrades.isPluginEnabledForCourse(courseId);
+            return $mmGrades.isPluginEnabledForCourse(courseId);
         };
 
         /**
@@ -113,7 +114,7 @@ angular.module('mm.addons.grades')
              */
             return function($scope, $state) {
                 $scope.icon = 'ion-stats-bars';
-                $scope.title = 'mma.grades.grades';
+                $scope.title = 'mm.grades.grades';
                 $scope.class = 'mma-grades-mine-handler';
                 $scope.action = function($event, course) {
                     $event.preventDefault();
@@ -137,7 +138,9 @@ angular.module('mm.addons.grades')
      */
     self.viewGrades = function() {
 
-        var self = {};
+        var self = {
+            type: mmUserProfileHandlersTypeNewPage
+        };
 
         /**
          * Check if handler is enabled.
@@ -145,7 +148,7 @@ angular.module('mm.addons.grades')
          * @return {Promise} Promise resolved with true if handler is enabled, false otherwise.
          */
         self.isEnabled = function() {
-            return $mmaGrades.isPluginEnabled();
+            return $mmGrades.isPluginEnabled();
         };
 
         /**
@@ -158,12 +161,12 @@ angular.module('mm.addons.grades')
          * @return {Promise}        Promise resolved with true if plugin is enabled, rejected or resolved with false otherwise.
          */
         self.isEnabledForUser = function(user, courseId, navOptions, admOptions) {
-            return $mmaGrades.isPluginEnabledForCourse(courseId).then(function() {
+            return $mmGrades.isPluginEnabledForCourse(courseId).then(function() {
                 var cacheKey = getCacheKey(courseId, user.id);
                 if (typeof viewGradesEnabledCache[cacheKey] != 'undefined') {
                     return viewGradesEnabledCache[cacheKey];
                 }
-                return $mmaGrades.isPluginEnabledForUser(courseId, user.id).then(function(enabled) {
+                return $mmGrades.isPluginEnabledForUser(courseId, user.id).then(function(enabled) {
                     viewGradesEnabledCache[cacheKey] = enabled;
                     return enabled;
                 });
@@ -187,8 +190,9 @@ angular.module('mm.addons.grades')
              * @name $mmaGradesHandlers#viewGrades:controller
              */
             return function($scope) {
-                $scope.title = 'mma.grades.viewgrades';
+                $scope.title = 'mm.grades.grades';
                 $scope.class = 'mma-grades-user-handler';
+                $scope.icon = 'ion-stats-bars';
 
                 $scope.action = function($event) {
                     $event.preventDefault();
@@ -224,9 +228,9 @@ angular.module('mm.addons.grades')
          * @return {Promise}         Promise resolved with true if enabled.
          */
         function isEnabled(siteId, courseId) {
-            return $mmaGrades.isPluginEnabled(siteId).then(function(enabled) {
+            return $mmGrades.isPluginEnabled(siteId).then(function(enabled) {
                 if (enabled) {
-                    return $mmaGrades.isPluginEnabledForCourse(courseId, siteId);
+                    return $mmGrades.isPluginEnabledForCourse(courseId, siteId);
                 }
             });
         }
@@ -349,7 +353,7 @@ angular.module('mm.addons.grades')
              */
             return function($scope) {
                 $scope.icon = 'ion-stats-bars';
-                $scope.title = 'mma.grades.grades';
+                $scope.title = 'mm.grades.grades';
                 $scope.state = 'site.coursesgrades';
                 $scope.class = 'mma-grades-coursesgrades';
             };

@@ -15,15 +15,18 @@
 angular.module('mm.addons.messages', ['mm.core'])
 
 .constant('mmaMessagesComponent', 'mmaMessages')
+.constant('mmaMessagesLimitMessages', 50)
 .constant('mmaMessagesDiscussionLoadedEvent', 'mma_messages_discussion_loaded')
 .constant('mmaMessagesDiscussionLeftEvent', 'mma_messages_discussion_left')
-.constant('mmaMessagesPollInterval', 5000)
+.constant('mmaMessagesPollInterval', 10000)
 .constant('mmaMessagesPriority', 600)
 .constant('mmaMessagesSendMessagePriority', 1000)
 .constant('mmaMessagesAddContactPriority', 800)
 .constant('mmaMessagesBlockContactPriority', 600)
 .constant('mmaMessagesPreferencesPriority', 600)
 .constant('mmaMessagesNewMessageEvent', 'mma-messages_new_message')
+.constant('mmaMessagesReadChangedEvent', 'mma-messages_read_changed')
+.constant('mmaMessagesReadCronEvent', 'mma-messages_read_cron')
 .constant('mmaMessagesAutomSyncedEvent', 'mma_messages_autom_synced')
 
 .config(function($stateProvider, $mmUserDelegateProvider, $mmSideMenuDelegateProvider, mmaMessagesSendMessagePriority,
@@ -105,7 +108,8 @@ angular.module('mm.addons.messages', ['mm.core'])
     }
 
     // Register sync process.
-    $mmCronDelegate.register('mmaMessages', '$mmaMessagesHandlers.syncHandler');
+    $mmCronDelegate.register('mmaMessagesSync', '$mmaMessagesHandlers.syncHandler');
+    $mmCronDelegate.register('mmaMessagesMenu', '$mmaMessagesHandlers.sideMenuNav');
 
     // Sync some discussions when device goes online.
     $mmEvents.on(mmCoreEventOnlineStatusChanged, function(online) {
