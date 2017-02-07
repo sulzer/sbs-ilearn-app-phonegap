@@ -33,7 +33,6 @@ angular.module('mm.addons.mod_forum')
         syncObserver, syncManualObserver, onlineObserver;
 
     $scope.discussionId = discussionId;
-    $scope.trackPosts = $stateParams.trackposts;
     $scope.component = mmaModForumComponent;
     $scope.discussionStr = $translate.instant('discussion');
     $scope.componentId = cmid;
@@ -208,7 +207,9 @@ angular.module('mm.addons.mod_forum')
 
     $scope.changeSort(true).then(function() {
         // Add log in Moodle.
-        $mmaModForum.logDiscussionView(discussionId);
+        $mmSite.write('mod_forum_view_forum_discussion', {
+            discussionid: discussionId
+        });
     });
 
     // Pull to refresh.

@@ -21,7 +21,7 @@ angular.module('mm.addons.frontpage')
  * @ngdoc service
  * @name $mmaFrontpage
  */
-.factory('$mmaFrontpage', function($mmSite, $log, $q, $mmCourse, $mmSite) {
+.factory('$mmaFrontpage', function($mmSite, $log, $q, $mmCourse) {
     $log = $log.getInstance('$mmaFrontpage');
 
     var self = {};
@@ -61,15 +61,14 @@ angular.module('mm.addons.frontpage')
         // fails there is a very high chance that frontpage is not available.
         $log.debug('Using WS call to check if frontpage is available.');
 
-        var siteHomeId = $mmSite.getSiteHomeId();
-
-        var hasData = false;
+        var siteHomeId = $mmSite.getInfo().siteid || 1;
 
         return $mmCourse.getSections(siteHomeId, false, true, {emergencyCache: false}).then(function(data) {
             if (!angular.isArray(data) || !data.length) {
                 return $q.reject();
             }
 
+            var hasData = false;
             angular.forEach(data, function(section) {
                 if (section.summary || (section.modules && section.modules.length)) {
                     hasData = true;
@@ -79,20 +78,6 @@ angular.module('mm.addons.frontpage')
             if (!hasData) {
                 return $q.reject();
             }
-        }).catch(function() {
-            return $mmSite.getConfig().then(function(config) {
-                if (config.frontpageloggedin) {
-                    var items = config.frontpageloggedin.split(',');
-
-                    if (items.length > 0) {
-                        return $q.when();
-                    }
-                }
-
-                if (!hasData) {
-                    return $q.reject();
-                }
-            });
         });
     };
 

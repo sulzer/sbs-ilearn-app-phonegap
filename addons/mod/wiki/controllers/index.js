@@ -23,7 +23,7 @@ angular.module('mm.addons.mod_wiki')
  */
 .controller('mmaModWikiIndexCtrl', function($q, $scope, $stateParams, $mmCourse, $mmUser, $mmGroups, $ionicPopover, $mmUtil, $state,
         $mmSite, $mmaModWiki, $ionicTabsDelegate, $ionicHistory, $translate, mmaModWikiSubwikiPagesLoaded, $mmCourseHelper,
-        $mmText, mmaModWikiComponent, $mmEvents, $ionicScrollDelegate,
+        $mmCoursePrefetchDelegate, $mmText, mmaModWikiComponent, $mmEvents, mmCoreEventPackageStatusChanged, $ionicScrollDelegate,
         $mmaModWikiOffline, mmaModWikiPageCreatedEvent, mmaModWikiSubwikiAutomSyncedEvent, $mmaModWikiSync,
         mmaModWikiManualSyncedEvent, $mmApp, mmCoreEventOnlineStatusChanged) {
     var module = $stateParams.module || {},
@@ -32,7 +32,7 @@ angular.module('mm.addons.mod_wiki')
         currentPage = $stateParams.pageid || false,
         pageTitle = $stateParams.pagetitle,
         isCurrentView = true,
-        popover, wiki, currentSubwiki, loadedSubwikis, tabsDelegate, onlineObserver,
+        popover, wiki, currentSubwiki, loadedSubwikis, tabsDelegate, statusObserver, onlineObserver,
         currentPageObj, newPageObserver, syncObserver, syncObserverManual, scrollView, ignoreManualSyncEvent;
 
     $scope.title = pageTitle || module.name;
@@ -240,8 +240,17 @@ angular.module('mm.addons.mod_wiki')
                     }).then(function() {
                         return fetchWikiPage();
                     }).then(function() {
-                        // All data obtained, now fill the context menu.
-                        $mmCourseHelper.fillContextMenu($scope, module, courseId, refresh, mmaModWikiComponent);
+                        fillContextMenu(module, courseId, refresh);
+
+                        if (typeof statusObserver == "undefined") {
+                            // Listen for changes on this module status.
+                            statusObserver = $mmEvents.on(mmCoreEventPackageStatusChanged, function(data) {
+                                if (data.siteid === $mmSite.getId() && data.componentId === module.id &&
+                                        data.component === mmaModWikiComponent) {
+                                    fillContextMenu(module, courseId);
+                                }
+                            });
+                        }
                     });
                 });
             });
@@ -265,20 +274,55 @@ angular.module('mm.addons.mod_wiki')
         });
     }
 
+    // Convenience function that fills Context Menu Popover.
+    function fillContextMenu(mod, courseId, invalidateCache) {
+        $mmCourseHelper.getModulePrefetchInfo(mod, courseId, invalidateCache).then(function(moduleInfo) {
+            $scope.size = moduleInfo.size > 0 ? moduleInfo.sizeReadable : 0;
+            $scope.prefetchStatusIcon = moduleInfo.statusIcon;
+            $scope.timemodified = moduleInfo.timemodified > 0 ? $translate.instant('mm.core.lastmodified') + ': ' + moduleInfo.timemodifiedReadable : "";
+        });
+    }
+
     // Context Menu Description action.
     $scope.expandDescription = function() {
         $mmText.expandText($translate.instant('mm.core.description'), $scope.description, false, mmaModWikiComponent, module.id);
     };
 
-    // Confirm and Remove action.
+    // Context Menu File size action.
     $scope.removeFiles = function() {
-        $mmCourseHelper.confirmAndRemove(module, courseId);
+        $mmUtil.showConfirm($translate('mm.course.confirmdeletemodulefiles')).then(function() {
+            $mmCoursePrefetchDelegate.removeModuleFiles(module, courseId);
+        });
     };
 
     // Context Menu Prefetch action.
     $scope.prefetch = function() {
-        $mmCourseHelper.contextMenuPrefetch($scope, module, courseId);
+        var icon = $scope.prefetchStatusIcon;
+
+        $scope.prefetchStatusIcon = 'spinner'; // Show spinner since this operation might take a while.
+
+        // We need to call getDownloadSize, the package might have been updated.
+        $mmCoursePrefetchDelegate.getModuleDownloadSize(module, courseId).then(function(size) {
+            $mmUtil.confirmDownloadSize(size).then(function() {
+                $mmCoursePrefetchDelegate.prefetchModule(module, courseId).catch(function() {
+                    if (!$scope.$$destroyed) {
+                        $mmUtil.showErrorModal('mm.core.errordownloading', true);
+                    }
+                });
+            }).catch(function() {
+                // User hasn't confirmed, stop spinner.
+                $scope.prefetchStatusIcon = icon;
+            });
+        }).catch(function(error) {
+            $scope.prefetchStatusIcon = icon;
+            if (error) {
+                $mmUtil.showErrorModal(error);
+            } else {
+                $mmUtil.showErrorModal('mm.core.errordownloading', true);
+            }
+        });
     };
+
     // Convinience function that handles Subwiki Popover.
     function handleSubwikiPopover() {
         $ionicPopover.fromTemplateUrl('addons/mod/wiki/templates/subwiki_picker.html', {
@@ -799,6 +843,7 @@ angular.module('mm.addons.mod_wiki')
     });
 
     $scope.$on('$destroy', function() {
+        statusObserver && statusObserver.off && statusObserver.off();
         popover && popover.remove();
         newPageObserver && newPageObserver.off && newPageObserver.off();
         syncObserver && syncObserver.off && syncObserver.off();

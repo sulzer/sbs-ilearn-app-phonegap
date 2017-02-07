@@ -409,8 +409,14 @@ angular.module('mm.core.course')
              * @return {Promise}         Promise resolved with true if downloadable, resolved with false otherwise.
              */
             this.isDownloadable = function(module, courseId) {
-                // By default, mark all instances as downloadable.
-                return $q.when(true);
+                if (this.isResource) {
+                    // Load module contents if needed.
+                    return this.loadContents(module, courseId).then(function() {
+                        return module.contents && module.contents.length > 0;
+                    });
+                } else {
+                    return $q.when(true);
+                }
             };
 
             /**

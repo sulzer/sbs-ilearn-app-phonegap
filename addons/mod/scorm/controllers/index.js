@@ -24,7 +24,7 @@ angular.module('mm.addons.mod_scorm')
 .controller('mmaModScormIndexCtrl', function($scope, $stateParams, $mmaModScorm, $mmUtil, $q, $mmCourse, $ionicScrollDelegate,
             $mmCoursePrefetchDelegate, $mmaModScormHelper, $mmEvents, $mmSite, $state, mmCoreOutdated, mmCoreNotDownloaded,
             mmCoreDownloading, mmaModScormComponent, mmCoreEventPackageStatusChanged, $ionicHistory, mmaModScormEventAutomSynced,
-            $mmaModScormSync, $timeout, $mmText, $translate, $mmaModScormPrefetchHandler, $mmApp, $mmCourseHelper,
+            $mmaModScormSync, $timeout, $mmText, $translate, $mmaModScormPrefetchHandler, $mmApp, $mmEvents,
             mmCoreEventOnlineStatusChanged) {
 
     var module = $stateParams.module || {},
@@ -74,7 +74,7 @@ angular.module('mm.addons.mod_scorm')
                 return; // SCORM is closed or not open yet, we can't get more data.
             }
 
-            return syncScorm(showErrors).catch(function() {
+            return syncScorm(!refresh, showErrors).catch(function() {
                 // Ignore errors, keep getting data even if sync fails.
             }).then(function() {
 
@@ -145,9 +145,6 @@ angular.module('mm.addons.mod_scorm')
             return showError(message);
         }).then(function() {
             $scope.allDataLoaded = true;
-
-            // All data obtained, now fill the context menu.
-            $mmCourseHelper.fillContextMenu($scope, module, courseid, refresh, mmaModScormComponent);
         });
     }
 
@@ -345,8 +342,9 @@ angular.module('mm.addons.mod_scorm')
     }
 
     // Tries to synchronize the current SCORM.
-    function syncScorm(showErrors) {
-        return $mmaModScormSync.syncScorm(scorm).then(function(data) {
+    function syncScorm(checkTime, showErrors) {
+        var promise = checkTime ? $mmaModScormSync.syncScormIfNeeded(scorm) : $mmaModScormSync.syncScorm(scorm);
+        return promise.then(function(data) {
             if (data) {
                 var message = $mmText.buildMessage(data.warnings);
                 if (message) {
@@ -424,16 +422,6 @@ angular.module('mm.addons.mod_scorm')
         } else {
             openScorm(scoId);
         }
-    };
-
-    // Confirm and Remove action.
-    $scope.removeFiles = function() {
-        $mmCourseHelper.confirmAndRemove(module, courseid);
-    };
-
-    // Context Menu Prefetch action.
-    $scope.prefetch = function() {
-        $mmCourseHelper.contextMenuPrefetch($scope, module, courseid);
     };
 
     // Context Menu Description action.

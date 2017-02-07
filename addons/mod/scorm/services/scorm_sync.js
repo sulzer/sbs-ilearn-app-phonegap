@@ -264,18 +264,10 @@ angular.module('mm.addons.mod_scorm')
         $log.debug('Try to sync SCORM ' + scorm.id + ' in site ' + siteId);
 
         // Prefetches data , set sync time and return warnings.
-        function finishSync(updated) {
-            var promise;
-
-            if (updated) {
-                promise = $mmaModScorm.invalidateAllScormData(scorm.id, siteId).catch(function() {}).then(function() {
-                    return $mmaModScormPrefetchHandler.downloadWSData(scorm, siteId);
-                });
-            } else {
-                promise = $q.when();
-            }
-
-            return promise.then(function() {
+        function finishSync() {
+            return $mmaModScorm.invalidateAllScormData(scorm.id, siteId).catch(function() {}).then(function() {
+                return $mmaModScormPrefetchHandler.downloadWSData(scorm, siteId);
+            }).then(function() {
                 return self.setSyncTime(scorm.id, siteId).catch(function() {
                     // Ignore errors.
                 });
@@ -338,7 +330,7 @@ angular.module('mm.addons.mod_scorm')
                         }
                     });
                     return $q.all(promises).then(function() {
-                        return finishSync(true);
+                        return finishSync();
                     });
 
                 } else if (collisions.length) {
@@ -374,7 +366,7 @@ angular.module('mm.addons.mod_scorm')
                                 if (cannotSyncSome) {
                                     warnings.push($translate.instant('mma.mod_scorm.warningsynconlineincomplete'));
                                 }
-                                return finishSync(true);
+                                return finishSync();
                             });
                         });
                     });

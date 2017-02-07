@@ -14,12 +14,10 @@
 
 angular.module('mm.core.fileuploader')
 
-.constant('mmFileUploaderFileSizeWarning', 1048576) // 1 MB.
-.constant('mmFileUploaderWifiFileSizeWarning', 10485760) // 10 MB.
+.constant('mmFileUploaderFileSizeWarning', 5242880)
 
 .factory('$mmFileUploaderHelper', function($q, $mmUtil, $mmApp, $log, $translate, $window, $state, $rootScope,
-        $mmFileUploader, $cordovaCamera, $cordovaCapture, $mmLang, $mmFS, $mmText, mmFileUploaderFileSizeWarning,
-        mmFileUploaderWifiFileSizeWarning) {
+        $mmFileUploader, $cordovaCamera, $cordovaCapture, $mmLang, $mmFS, $mmText, mmFileUploaderFileSizeWarning) {
 
     $log = $log.getInstance('$mmFileUploaderHelper');
 
@@ -32,24 +30,19 @@ angular.module('mm.core.fileuploader')
      * @module mm.core.fileuploader
      * @ngdoc method
      * @name $mmFileUploaderHelper#confirmUploadFile
-     * @param  {Number} size              File's size.
-     * @param  {Boolean} alwaysConfirm    True to show a confirm even if the size isn't high, false otherwise.
-     * @param  {Boolean} allowOffline     True to allow uploading in offline, false to require connection.
-     * @param {Number} [wifiThreshold]    Threshold to show confirm in WiFi connection. Default: mmFileUploaderWifiFileSizeWarning.
-     * @param {Number} [limitedThreshold] Threshold to show confirm in limited connection. Default: mmFileUploaderFileSizeWarning.
-     * @return {Promise}                  Promise resolved when the user confirms or if there's no need to show a modal.
+     * @param  {Number} size           File's size.
+     * @param  {Boolean} alwaysConfirm True to show a confirm even if the size isn't high, false otherwise.
+     * @param  {Boolean} allowOffline  True to allow uploading in offline, false to require connection.
+     * @return {Promise}               Promise resolved when the user confirms or if there's no need to show a modal.
      */
-    self.confirmUploadFile = function(size, alwaysConfirm, allowOffline, wifiThreshold, limitedThreshold) {
+    self.confirmUploadFile = function(size, alwaysConfirm, allowOffline) {
         if (!allowOffline && !$mmApp.isOnline()) {
             return $mmLang.translateAndReject('mm.fileuploader.errormustbeonlinetoupload');
         }
 
-        wifiThreshold = typeof wifiThreshold == 'undefined' ? mmFileUploaderWifiFileSizeWarning : wifiThreshold;
-        limitedThreshold = typeof limitedThreshold == 'undefined' ? mmFileUploaderFileSizeWarning : limitedThreshold;
-
         if (size < 0) {
             return $mmUtil.showConfirm($translate('mm.fileuploader.confirmuploadunknownsize'));
-        } else if (size >= wifiThreshold || ($mmApp.isNetworkAccessLimited() && size >= limitedThreshold)) {
+        } else if ($mmApp.isNetworkAccessLimited() || size >= mmFileUploaderFileSizeWarning) {
             size = $mmText.bytesToSize(size, 2);
             return $mmUtil.showConfirm($translate('mm.fileuploader.confirmuploadfile', {size: size}));
         } else {

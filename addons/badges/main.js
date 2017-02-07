@@ -17,7 +17,7 @@ angular.module('mm.addons.badges', [])
 .constant('mmaBadgesPriority', 50)
 .constant('mmaBadgesComponent', 'mmaBadges')
 
-.config(function($stateProvider, $mmUserDelegateProvider, mmaBadgesPriority, $mmContentLinksDelegateProvider) {
+.config(function($stateProvider, $mmUserDelegateProvider, mmaBadgesPriority) {
 
     $stateProvider
 
@@ -44,13 +44,12 @@ angular.module('mm.addons.badges', [])
             }
         },
         params: {
-            cid: null, // Not naming it courseid because it collides with 'site.userbadges' param in split-view.
-            uid: null, // Not naming it userid because it collides with 'site.userbadges' param in split-view.
+            courseid: null,
+            userid: null,
             uniquehash: null
         }
     });
 
     // Register plugin on user profile.
     $mmUserDelegateProvider.registerProfileHandler('mmaBadges', '$mmaBadgesHandlers.userProfile', mmaBadgesPriority);
-    $mmContentLinksDelegateProvider.registerLinkHandler('mmaBadges', '$mmaBadgesHandlers.linksHandler');
 });

@@ -52,12 +52,24 @@ angular.module('mm.addons.mod_label')
          */
         self.getController = function(module) {
             return function($scope) {
-                $scope.title = module.description;
-                module.description = "";
+                var title = $mmText.shortenText($mmText.cleanTags(module.description).trim(), 128);
+                if (title.length <= 0) {
+                    $translate('mma.mod_label.taptoview').then(function(taptoview) {
+                        $scope.title = '<span class="mma-mod_label-empty">' + taptoview + '</span>';
+                    });
+                } else {
+                    $scope.title = title;
+                }
 
                 $scope.icon = false;
                 $scope.class = 'mma-mod_label-handler';
-                $scope.action = false;
+                $scope.action = function(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    $state.go('site.mod_label', {description: module.description});
+                };
             };
         };
 
