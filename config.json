@@ -1,5 +1,6 @@
 {
     "app_id" : "edu.sbs.ilearnapp",
+    "appname": "SBS iLearn",
     "versioncode" : "2017",
     "versionname" : "1.1.320",
     "cache_expiration_time" : 300000,
@@ -9,5 +10,7 @@
     "wsextservice" : "local_mobile",
     "siteurl" : "https://ilearn.sbs.edu",
     "gcmpn": "908958224806",
-    "customurlscheme": "moodlemobile"
+    "customurlscheme": "moodlemobile",
+    "skipssoconfirmation": "false",
+    "forcedefaultlanguage": "false"
 }

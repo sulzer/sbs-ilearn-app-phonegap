@@ -9355,74 +9355,6 @@ input.mm-fileuploader-picker {
   opacity: 0;
   outline: none; }
 
-/* - User grades table (most of it extracted from MM1)
--------------------------------------------------------------------------- */
-.mm-grades-container {
-  padding-right: 2px; }
-
-.mm-grades-table {
-  border-collapse: collapse;
-  line-height: 20px;
-  width: 100%;
-  font-size: 16px;
-  color: #444; }
-  .mm-grades-table tr {
-    border-bottom: 1px solid #ddd; }
-  .mm-grades-table th, .mm-grades-table td {
-    text-align: left;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-right: 10px;
-    vertical-align: top;
-    white-space: normal; }
-  .mm-grades-table thead th {
-    padding-left: 10px;
-    vertical-align: bottom;
-    font-weight: bold; }
-  .mm-grades-table tbody th {
-    font-weight: normal; }
-  .mm-grades-table .item, .mm-grades-table .itemcenter {
-    display: table-cell; }
-  .mm-grades-table th.b1b {
-    padding-left: 20px; }
-  .mm-grades-table th.item, .mm-grades-table th.itemcenter {
-    padding-left: 30px; }
-  .mm-grades-table th.baggt {
-    padding-left: 30px; }
-  .mm-grades-table th img {
-    margin-left: -20px;
-    float: left; }
-  .mm-grades-table .b1l {
-    width: 10px;
-    min-width: 10px; }
-  .mm-grades-table .b1t, .mm-grades-table .baggt {
-    font-weight: bold; }
-  .mm-grades-table .itemcenter {
-    padding: 10px;
-    white-space: nowrap; }
-  .mm-grades-table .feedbacktext {
-    padding-left: 10px; }
-    .mm-grades-table .feedbacktext .no-overflow {
-      overflow: auto; }
-  .mm-grades-table .dimmed_text, .mm-grades-table .hidden, .mm-grades-table .hidden a {
-    color: #aaa; }
-  .mm-grades-table .oddd1, .mm-grades-table .oddd3, .mm-grades-table .evend3, .mm-grades-table .levelodd {
-    background-color: #f1f1f1; }
-  .mm-grades-table .oddd2, .mm-grades-table .evend2, .mm-grades-table .oddd4, .mm-grades-table .evend4 {
-    background-color: #f5f5f5; }
-  .mm-grades-table .leveleven {
-    background-color: #fff; }
-  .mm-grades-table .column-leader {
-    border-left: 1px solid #ddd;
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd; }
-    .mm-grades-table .column-leader.level1 {
-      border-left: 0; }
-  .mm-grades-table .column-itemname {
-    border-right: 1px solid #ddd;
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd; }
-
 .mm-mm_login_sites .item-thumbnail-left .item-content {
   padding-top: 16px;
   padding-right: 16px; }
@@ -9504,6 +9436,74 @@ input.mm-fileuploader-picker {
 
 .mm-question-warning, p.mm-question-warning, .item .mm-question-warning, .mm-grades-table .itemcenter .mm-question-warning {
   color: #c00; }
+
+/* - User grades table (most of it extracted from MM1)
+-------------------------------------------------------------------------- */
+.mm-grades-container {
+  padding-right: 2px; }
+
+.mm-grades-table {
+  border-collapse: collapse;
+  line-height: 20px;
+  width: 100%;
+  font-size: 16px;
+  color: #444; }
+  .mm-grades-table tr {
+    border-bottom: 1px solid #ddd; }
+  .mm-grades-table th, .mm-grades-table td {
+    text-align: left;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    vertical-align: top;
+    white-space: normal; }
+  .mm-grades-table thead th {
+    padding-left: 10px;
+    vertical-align: bottom;
+    font-weight: bold; }
+  .mm-grades-table tbody th {
+    font-weight: normal; }
+  .mm-grades-table .item, .mm-grades-table .itemcenter {
+    display: table-cell; }
+  .mm-grades-table th.b1b {
+    padding-left: 20px; }
+  .mm-grades-table th.item, .mm-grades-table th.itemcenter {
+    padding-left: 30px; }
+  .mm-grades-table th.baggt {
+    padding-left: 30px; }
+  .mm-grades-table th img {
+    margin-left: -20px;
+    float: left; }
+  .mm-grades-table .b1l {
+    width: 10px;
+    min-width: 10px; }
+  .mm-grades-table .b1t, .mm-grades-table .baggt {
+    font-weight: bold; }
+  .mm-grades-table .itemcenter {
+    padding: 10px;
+    white-space: nowrap; }
+  .mm-grades-table .feedbacktext {
+    padding-left: 10px; }
+    .mm-grades-table .feedbacktext .no-overflow {
+      overflow: auto; }
+  .mm-grades-table .dimmed_text, .mm-grades-table .hidden, .mm-grades-table .hidden a {
+    color: #aaa; }
+  .mm-grades-table .oddd1, .mm-grades-table .oddd3, .mm-grades-table .evend3, .mm-grades-table .levelodd {
+    background-color: #f1f1f1; }
+  .mm-grades-table .oddd2, .mm-grades-table .evend2, .mm-grades-table .oddd4, .mm-grades-table .evend4 {
+    background-color: #f5f5f5; }
+  .mm-grades-table .leveleven {
+    background-color: #fff; }
+  .mm-grades-table .column-leader {
+    border-left: 1px solid #ddd;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd; }
+    .mm-grades-table .column-leader.level1 {
+      border-left: 0; }
+  .mm-grades-table .column-itemname {
+    border-right: 1px solid #ddd;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd; }
 
 #mm-settings-languagelabel {
   color: #000; }
