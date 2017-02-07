@@ -21,13 +21,21 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
 .constant('mmaModAssignSubmissionStatusDraft', 'draft')
 .constant('mmaModAssignSubmissionStatusSubmitted', 'submitted')
 .constant('mmaModAssignAttemptReopenMethodNone', 'none')
+.constant('mmaModAssignAttemptReopenMethodManual', 'manual')
 .constant('mmaModAssignUnlimitedAttempts', -1)
 .constant('mmaModAssignGradingStatusGraded', 'graded')
 .constant('mmaModAssignGradingStatusNotGraded', 'notgraded')
 .constant('mmaModMarkingWorkflowStateReleased', 'released')
+.constant('mmaModAssignNeedGrading', 'needgrading')
 .constant('mmaModAssignSubmissionInvalidatedEvent', 'mma_mod_assign_submission_invalidated')
 .constant('mmaModAssignSubmissionSavedEvent', 'mma_mod_assign_submission_saved')
+.constant('mmaModAssignFeedbackSavedEvent', 'mma_mod_assign_feedback_saved')
 .constant('mmaModAssignSubmittedForGradingEvent', 'mma_mod_assign_submitted_for_grading')
+.constant('mmaModAssignEventAutomSynced', 'mma_mod_assign_autom_synced')
+.constant('mmaModAssignEventManualSynced', 'mma_mod_assign_manual_synced')
+.constant('mmaModAssignEventSubmitGrade', 'mma_mod_assign_submit_grade')
+.constant('mmaModAssignGradedEvent', 'mma_mod_assign_graded')
+.constant('mmaModAssignSyncTime', 300000) // In milliseconds.
 
 .config(function($stateProvider) {
 
@@ -50,7 +58,7 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
     .state('site.mod_assign-description', {
         url: '/mod_assign-description',
         params: {
-            assignid: null,
+            moduleid: null,
             description: null,
             files: null
 
@@ -66,9 +74,9 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
     .state('site.mod_assign-submission-list', {
         url: '/mod_assign-submission-list',
         params: {
+            status: null,
             moduleid: null,
             modulename: null,
-            sid: null,
             courseid: null
         },
         views: {
@@ -85,7 +93,8 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
             submitid: null,
             blindid: null,
             moduleid: null,
-            courseid: null
+            courseid: null,
+            showSubmission: null
         },
         views: {
             'site': {
@@ -109,6 +118,24 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
                 templateUrl: 'addons/mod/assign/templates/edit.html'
             }
         }
+    })
+
+    .state('site.mod_assign-feedback-edit', {
+        url: '/mod_assign-feedback-edit',
+        params: {
+            assignid: null,
+            userid: null,
+            plugintype: null,
+            assign: null,
+            submission: null,
+            plugin: null
+        },
+        views: {
+            'site': {
+                controller: 'mmaModAssignFeedbackEditCtrl',
+                templateUrl: 'addons/mod/assign/templates/feedbackedit.html'
+            }
+        }
     });
 
 })
@@ -117,4 +144,9 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
     $mmCourseDelegateProvider.registerContentHandler('mmaModAssign', 'assign', '$mmaModAssignHandlers.courseContent');
     $mmContentLinksDelegateProvider.registerLinkHandler('mmaModAssign', '$mmaModAssignHandlers.linksHandler');
     $mmCoursePrefetchDelegateProvider.registerPrefetchHandler('mmaModAssign', 'assign', '$mmaModAssignPrefetchHandler');
+})
+
+.run(function($mmCronDelegate) {
+    // Register sync handler.
+    $mmCronDelegate.register('mmaModAssign', '$mmaModAssignHandlers.syncHandler');
 });

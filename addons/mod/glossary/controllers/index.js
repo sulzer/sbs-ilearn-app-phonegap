@@ -21,15 +21,15 @@ angular.module('mm.addons.mod_glossary')
  * @ngdoc controller
  * @name mmaModGlossaryIndexCtrl
  */
-.controller('mmaModGlossaryIndexCtrl', function($q, $scope, $stateParams, $ionicPopover, $mmUtil, $mmaModGlossary,
-        $ionicScrollDelegate, $translate, $mmText) {
+.controller('mmaModGlossaryIndexCtrl', function($q, $scope, $stateParams, $ionicPopover, $mmUtil, $mmCourseHelper, $mmaModGlossary,
+        $ionicScrollDelegate, $translate, $mmText, mmaModGlossaryComponent, mmaModGlossaryLimitEntriesNum) {
 
     var module = $stateParams.module || {},
         courseId = $stateParams.courseid,
         glossary,
         noop = function(){},
         limitFrom = 0,
-        limitNum = 25,
+        limitNum = mmaModGlossaryLimitEntriesNum,
         popover,
         viewMode,   // The archetype of view (letter, date, author, cat).
         fetchMode = 'letter_all',       // Default.
@@ -64,6 +64,8 @@ angular.module('mm.addons.mod_glossary')
         searchQuery: ''
     };
     $scope.loadingMessage = loadingMessage;
+    $scope.component = mmaModGlossaryComponent;
+    $scope.componentId = module.id;
 
     $scope.loadMoreEntries = function() {
         loadMoreEntries().finally(function() {
@@ -73,9 +75,12 @@ angular.module('mm.addons.mod_glossary')
     $scope.refreshEntries = function() {
         if ($scope.loaded) {
             $scope.refreshIcon = 'spinner';
-            refreshEntries().finally(function() {
+            return refreshEntries().finally(function() {
                 $scope.refreshIcon = 'ion-refresh';
                 $scope.$broadcast('scroll.refreshComplete');
+
+                // Data refreshed, fill the context menu.
+                $mmCourseHelper.fillContextMenu($scope, module, courseId, true, mmaModGlossaryComponent);
             });
         }
     };
@@ -100,9 +105,20 @@ angular.module('mm.addons.mod_glossary')
         return fetchMode + ':' + entry.id;
     };
 
+    // Confirm and Remove action.
+    $scope.removeFiles = function() {
+        $mmCourseHelper.confirmAndRemove(module, courseId);
+    };
+
+    // Context Menu Prefetch action.
+    $scope.prefetch = function() {
+        $mmCourseHelper.contextMenuPrefetch($scope, module, courseId);
+    };
+
     // Context Menu Description action.
     $scope.expandDescription = function() {
-        $mmText.expandText($translate.instant('mm.core.description'), $scope.description);
+        $mmText.expandText($translate.instant('mm.core.description'), $scope.description, false,
+                mmaModGlossaryComponent, module.id);
     };
 
     // Controller run.
@@ -160,6 +176,8 @@ angular.module('mm.addons.mod_glossary')
         fetchEntries().then(function() {
             // After a successful fetch, the glossary can be considered as 'viewed'.
             $mmaModGlossary.logView(glossary.id, viewMode);
+            // All data obtained, now fill the context menu.
+            $mmCourseHelper.fillContextMenu($scope, module, courseId, false, mmaModGlossaryComponent);
         }).finally(function() {
             $scope.loaded = true;
             $scope.refreshIcon = 'ion-refresh';
@@ -189,6 +207,7 @@ angular.module('mm.addons.mod_glossary')
             $scope.showNoEntries = result.count <= 0;
         }).catch(function() {
             $mmUtil.showErrorModal('mma.mod_glossary.errorloadingentries', true);
+            $scope.canLoadMore = false; // Set to false to prevent infinite calls with infinite-loading.
             return $q.reject();
         });
     }

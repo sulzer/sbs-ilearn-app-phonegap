@@ -27,18 +27,19 @@ angular.module('mm.addons.mod_assign')
  *
  * Parameters received by this directive and shared with the directive to render the plugin (if any):
  *
- * @param {Object} assign         The assign.
- * @param {Object} submission     The submission.
- * @param {Object} plugin         The plugin to render.
- * @param {Boolean} edit          True if editing, false if read only.
- * @param {String} [scrollHandle] Name of the scroll handle of the page containing the plugin.
+ * @param {Object} assign          The assign.
+ * @param {Object} submission      The submission.
+ * @param {Object} plugin          The plugin to render.
+ * @param {Boolean} edit           True if editing, false if read only.
+ * @param {String} [scrollHandle]  Name of the scroll handle of the page containing the plugin.
+ * @param {Boolean} [allowOffline] True to allow offline usage.
  *
  * Also, the directives to render the plugin will receive the following parameters in the scope:
  *
  * @param {String} assignComponent Assignment component.
  * @param {Object} configs         Plugin configs.
  */
-.directive('mmaModAssignSubmissionPlugin', function($compile, $mmaModAssignSubmissionDelegate, $mmaModAssign,
+.directive('mmaModAssignSubmissionPlugin', function($compile, $mmaModAssignSubmissionDelegate, $mmaModAssign, $mmaModAssignHelper,
             mmaModAssignComponent) {
     return {
         restrict: 'E',
@@ -47,7 +48,8 @@ angular.module('mm.addons.mod_assign')
             plugin: '=',
             submission: '=',
             edit: '@?',
-            scrollHandle: '@?'
+            scrollHandle: '@?',
+            allowOffline: '@?'
         },
         templateUrl: 'addons/mod/assign/templates/submissionplugin.html',
         link: function(scope, element, attributes) {
@@ -59,20 +61,21 @@ angular.module('mm.addons.mod_assign')
                 return;
             }
 
+            plugin.name = $mmaModAssignSubmissionDelegate.getPluginName(plugin);
+            if (!plugin.name) {
+                return;
+            }
+
             scope.assignComponent = mmaModAssignComponent;
             scope.edit = scope.edit && scope.edit !== 'false';
+            scope.allowOffline = scope.allowOffline && scope.allowOffline !== 'false';
 
             // Check if the plugin has defined its own directive to render itself.
             directive = $mmaModAssignSubmissionDelegate.getDirectiveForPlugin(plugin, scope.edit);
 
             if (directive) {
                 // Configs are only used in directives.
-                scope.configs = {};
-                angular.forEach(scope.assign.configs, function(config) {
-                    if (config.subtype == 'assignsubmission' && config.plugin == plugin.type) {
-                        scope.configs[config.name] = config.value;
-                    }
-                });
+                scope.configs = $mmaModAssignHelper.getPluginConfig(scope.assign, 'assignsubmission', plugin.type);
 
                 // Add the directive to the element.
                 container.setAttribute(directive, '');
