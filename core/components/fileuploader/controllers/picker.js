@@ -26,6 +26,9 @@ angular.module('mm.core.fileuploader')
 
     var maxSize = $stateParams.maxsize,
         upload = $stateParams.upload,
+        allowOffline = $stateParams.allowOffline && !upload,
+        title = $stateParams.title,
+        filterMethods = $stateParams.filterMethods,
         uploadMethods = {
             album: $mmFileUploaderHelper.uploadImage,
             camera: $mmFileUploaderHelper.uploadImage,
@@ -36,6 +39,8 @@ angular.module('mm.core.fileuploader')
     $scope.isAndroid = ionic.Platform.isAndroid();
     $scope.handlers = $mmFileUploaderDelegate.getHandlers();
     $scope.title = $translate.instant(upload ? 'mm.fileuploader.uploadafile' : 'mm.fileuploader.selectafile');
+    $scope.title = title ? title : $scope.title; // Override with custom title.
+    $scope.filterMethods = filterMethods ? filterMethods.split(',') : null;
 
     // Function called when a file is uploaded.
     function successUploading(result) {
@@ -72,7 +77,7 @@ angular.module('mm.core.fileuploader')
             return $mmFileUploaderHelper.errorMaxBytes(maxSize, file.name);
         }
 
-        return $mmFileUploaderHelper.confirmUploadFile(file.size).then(function() {
+        return $mmFileUploaderHelper.confirmUploadFile(file.size, false, allowOffline).then(function() {
             // We have the data of the file to be uploaded, but not its URL (needed). Create a copy of the file to upload it.
             return $mmFileUploaderHelper.copyAndUploadFile(file, upload).then(successUploading, errorUploading);
         }, errorUploading);
@@ -80,7 +85,7 @@ angular.module('mm.core.fileuploader')
 
     // Upload media.
     $scope.upload = function(type, param) {
-        if (!$mmApp.isOnline()) {
+        if (!allowOffline && !$mmApp.isOnline()) {
             $mmUtil.showErrorModal('mm.fileuploader.errormustbeonlinetoupload', true);
         } else {
             if (typeof(uploadMethods[type]) !== 'undefined') {
