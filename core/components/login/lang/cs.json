@@ -27,7 +27,7 @@
     "invalidmoodleversion": "Neplatná verze Moodle. Minimální potřebná verze je:",
     "invalidsite": "Adresa URL stránky je chybná",
     "invalidurl": "Neplatná URL",
-    "localmobileunexpectedresponse": "Kontrola rozšířených vlastností Moodle Mobile vrátil neočekávanou odezvu, budete ověřen pomocí standardních služeb mobilu .",
+    "localmobileunexpectedresponse": "Kontrola rozšířených vlastností SBS iLearn vrátil neočekávanou odezvu, budete ověřen pomocí standardních služeb mobilu .",
     "login": "Přihlásit se",
     "loginbutton": "Přihlásit se!",
     "logininsiterequired": "Váš Moodlu vás nutí k přihlášení pomocí prohlížeče. Nová instance prohlížeče otevře přesměrování na vaše stránky Moodle.",

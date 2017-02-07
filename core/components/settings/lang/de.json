@@ -1,6 +1,6 @@
 {
     "about": "Weitere Infos",
-    "appname": "Moodle Mobile {{version}}",
+    "appname": "SBS iLearn {{version}}",
     "appready": "App nutzbar",
     "cacheexpirationtime": "Speicherdauer im Cache (Millisekunden)",
     "cannotsyncoffline": "Offline kann nicht synchronisiert werden.",

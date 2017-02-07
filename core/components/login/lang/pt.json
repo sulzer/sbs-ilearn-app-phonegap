@@ -24,7 +24,7 @@
     "invalidmoodleversion": "A versão do Moodle é inválida. É necessária a versão 2.4 ou superior.",
     "invalidsite": "O URL do site é inválido.",
     "invalidurl": "URL inválido",
-    "localmobileunexpectedresponse": "A verificação do Moodle Mobile Additional Features teve um erro inesperado, a ligação será feita através do serviço Mobile padrão.",
+    "localmobileunexpectedresponse": "A verificação do SBS iLearn Additional Features teve um erro inesperado, a ligação será feita através do serviço Mobile padrão.",
     "login": "Entrar",
     "loginbutton": "Entrar!",
     "logininsiterequired": "Precisa de entrar no site através de uma janela de navegador.",

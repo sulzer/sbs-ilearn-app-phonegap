@@ -33,7 +33,7 @@
     "invalidurl": "URL no válida",
     "invalidvaluemax": "El valor máximo es {{$a}}",
     "invalidvaluemin": "El valor mínimo es {{$a}}",
-    "localmobileunexpectedresponse": "La revisión de las características Adicionales de Moodle Mobile regresó una respuesta inesperada; Usted será autenticado usando el servicio Mobile estándar.",
+    "localmobileunexpectedresponse": "La revisión de las características Adicionales de SBS iLearn regresó una respuesta inesperada; Usted será autenticado usando el servicio Mobile estándar.",
     "login": "Ingreso",
     "loginbutton": "Ingreso",
     "logininsiterequired": "Usted necesita ingresar al sitio con una ventana del navegador.",
