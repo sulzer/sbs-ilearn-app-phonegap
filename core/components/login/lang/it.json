@@ -24,7 +24,7 @@
     "invalidmoodleversion": "Versione di Moodle non valida. La versione minima richiesta:",
     "invalidsite": "L'URL del sito non è valida",
     "invalidurl": "L'URL non è valido",
-    "localmobileunexpectedresponse": "Il controllo delle SBS iLearn Additional Feature ha restituito una risposta inattesa, sarai autenticato tramite i servizi Mobile standard.",
+    "localmobileunexpectedresponse": "Il controllo delle Moodle Mobile Additional Feature ha restituito una risposta inattesa, sarai autenticato tramite i servizi Mobile standard.",
     "login": "Login",
     "loginbutton": "Login!",
     "logininsiterequired": "Devi autenticarti usando una finestra browser",

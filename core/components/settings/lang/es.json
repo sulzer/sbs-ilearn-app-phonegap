@@ -1,6 +1,6 @@
 {
     "about": "Acerca de",
-    "appname": "SBS iLearn {{version}}",
+    "appname": "Moodle Mobile {{version}}",
     "appready": "App preparada",
     "cacheexpirationtime": "Tiempo de expiración de caché (mili segundos)",
     "cordovadevicemodel": "Modelo de dispositivo Cordova",

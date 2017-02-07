@@ -296,7 +296,7 @@
     "mm.question.notyetanswered": "Ännu inte besvarad",
     "mm.question.partiallycorrect": "Delvis korrekt",
     "mm.settings.about": "Om",
-    "mm.settings.appname": "SBS iLearn {{version}}",
+    "mm.settings.appname": "Moodle Mobile {{version}}",
     "mm.settings.appready": "Appen är redo",
     "mm.settings.cacheexpirationtime": "Cache utgångs tid (millisekunder)",
     "mm.settings.cordovadevicemodel": "",

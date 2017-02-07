@@ -33,7 +33,7 @@
     "invalidurl": "L'URL no és vàlid",
     "invalidvaluemax": "El valor màxim és {{$a}}",
     "invalidvaluemin": "El valor mínim és {{$a}}",
-    "localmobileunexpectedresponse": "Les característiques addicionals de SBS iLearn han tornat una resposta inesperada, us heu d'autenticar fent servir el servei estàndard de Mobile.",
+    "localmobileunexpectedresponse": "Les característiques addicionals de Moodle Mobile han tornat una resposta inesperada, us heu d'autenticar fent servir el servei estàndard de Mobile.",
     "login": "Entra",
     "loginbutton": "Inicia la sessió",
     "logininsiterequired": "Heu d'entrar al lloc a través d'una finestra del navegador.",
