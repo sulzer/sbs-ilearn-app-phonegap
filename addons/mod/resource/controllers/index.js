@@ -22,7 +22,7 @@ angular.module('mm.addons.mod_resource')
  * @name mmaModResourceIndexCtrl
  */
 .controller('mmaModResourceIndexCtrl', function($scope, $stateParams, $mmUtil, $mmaModResource, $log, $mmApp, $mmCourse, $timeout,
-        $mmText, $translate, mmaModResourceComponent, $mmaModResourcePrefetchHandler, $mmCourseHelper) {
+        $mmText, $translate, mmaModResourceComponent, $mmaModResourcePrefetchHandler) {
     $log = $log.getInstance('mmaModResourceIndexCtrl');
 
     var module = $stateParams.module || {},
@@ -37,7 +37,7 @@ angular.module('mm.addons.mod_resource')
     $scope.component = mmaModResourceComponent;
     $scope.componentId = module.id;
 
-    function fetchContent(refresh) {
+    function fetchContent() {
         // Load module contents if needed.
         return $mmCourse.loadModuleContents(module, courseId).then(function() {
             if (!module.contents || !module.contents.length) {
@@ -72,7 +72,6 @@ angular.module('mm.addons.mod_resource')
                         }
                     }).catch(function() {
                         $mmUtil.showErrorModal('mma.mod_resource.errorwhileloadingthecontent', true);
-                        return $q.reject();
                     }).finally(function() {
                         $scope.loaded = true;
                         $scope.refreshIcon = 'ion-refresh';
@@ -101,21 +100,8 @@ angular.module('mm.addons.mod_resource')
                     });
                 };
             }
-        }).then(function() {
-            // All data obtained, now fill the context menu.
-            $mmCourseHelper.fillContextMenu($scope, module, courseId, refresh, mmaModResourceComponent);
         });
     }
-
-    // Confirm and Remove action.
-    $scope.removeFiles = function() {
-        $mmCourseHelper.confirmAndRemove(module, courseId);
-    };
-
-    // Context Menu Prefetch action.
-    $scope.prefetch = function() {
-        $mmCourseHelper.contextMenuPrefetch($scope, module, courseId);
-    };
 
     // Context Menu Description action.
     $scope.expandDescription = function() {
@@ -127,7 +113,7 @@ angular.module('mm.addons.mod_resource')
         if ($scope.loaded) {
             $scope.refreshIcon = 'spinner';
             return $mmaModResourcePrefetchHandler.invalidateContent(module.id).then(function() {
-                return fetchContent(true);
+                return fetchContent();
             }).finally(function() {
                 $scope.$broadcast('scroll.refreshComplete');
             });

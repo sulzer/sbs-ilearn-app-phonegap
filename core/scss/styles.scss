@@ -33,6 +33,9 @@ $item-message-note-text: #999 !default;
 $item-message-note-font-size: $font-size-small !default;
 $item-message-mine-bg: rgba(17, 193, 243, .1) !default;
 
+// Completion
+$completion-img-width: 24px !default;
+
 // Disabled items.
 $item-disabled-color: #999 !default;
 
@@ -55,9 +58,6 @@ $mm-button-icon-small-height: 22px !default;
 
 // Required inputs asterisk color.
 $mm-input-required-asterisk-color: #ff4136 !default;
-
-// Item padding.
-$item-input-padding: 16px !default;
 
 /**
  * App Branding
@@ -139,17 +139,6 @@ em {
   white-space: normal;
 }
 
-.item h1:first-child,
-.item h2:first-child,
-.item .item-heading:first-child,
-.item h3:first-child,
-.item h4:first-child,
-.item h5:first-child,
-.item h6:first-child,
-.item p:first-child {
-    margin-top: 0;
-}
-
 // More options for grids.
 .col-65 {
   @include flex(0, 0, 65%);
@@ -226,7 +215,7 @@ em {
   }
 
   mm-format-text > p:only-child {
-    display: inline;
+    display: inline-block;
   }
 }
 
@@ -286,10 +275,10 @@ em {
     &.item-complex .item-content > img:first-child,
     img.avatar {
         position: static;
-        width: 90px;
-        height: 90px;
-        max-width: 90px;
-        max-height: 90px;
+        width: 100px;
+        height: 100px;
+        max-width: 100px;
+        max-height: 100px;
         margin-bottom: 10px;
         border-radius : 50%;
         padding: 4px;
@@ -304,11 +293,6 @@ em {
           height: auto;
         }
     }
-}
-
-.item-stack-top {
-  padding-top: 0;
-  border-top: 0;
 }
 
 /* Show buttons as tabs */
@@ -389,7 +373,7 @@ em {
   .spinner {
     position: absolute;
     right: $button-padding;
-    padding-top: 0;
+    padding-top: floor(($button-height + ($button-border-width * 2) + 1 - 28) / 2);
     line-height: 28px;
   }
 }
@@ -451,6 +435,25 @@ button.item.item-button-right {
   right: 0;
 }
 
+// mm-format-text can have elements with float. These styles makes sure height is calculated right.
+.mm-content-with-float {
+  display: inline-block;
+  width: 100%;
+}
+
+// Fix lists styles in mm-format-text.
+mm-format-text, *[mm-format-text] {
+  ul, ol {
+    -webkit-padding-start: 40px;
+  }
+  ul {
+    list-style: disc;
+  }
+  ol {
+    list-style: decimal;
+  }
+}
+
 .mm-loading-container {
     width: 100%;
     text-align: center;
@@ -490,36 +493,21 @@ mm-loading.mm-loading-center {
   background-color: #D9D9D9;
 }
 
-.mm-module-buttons {
-  float: right;
-  width: $button-height;
-  height: 30px;
-  margin-top: - ($button-padding);
-  margin-bottom: $button-padding;
-  margin-left: 2px;
-  position: relative;
-  text-align: center;
-
-  &.mm-button-completion {
-    margin-left: $button-icon-size + ($button-padding * 2) + 2;
-  }
-
-  .spinner {
-    bottom: - ($button-padding);
-    right: 7px;
-    position: absolute;
-  }
+.item.item-text-wrap.item-completion { // Add .item and .item-text-wrap to give more priority to the rule, otherwise it's overridden by Ionic styles.
+  padding-right: $item-icon-font-size + ($button-border-width * 2) + $item-padding * 3 + $completion-img-width;
 }
 
 .mm-completion-container {
   // Based on .item-checkbox .checkbox and .item-checkbox.item-checkbox-right
   position: absolute;
-  top: 0;
-  right: $button-height;
-  padding: $button-padding;
+  top: 50%;
+  right: $item-padding / 2;
+  margin-right: $item-icon-font-size + ($button-border-width * 2) + ($item-padding * 2);
+  margin-top: ($completion-img-width / 2) * -1;
 
   img {
-    width: $button-icon-size;
+    float: right;
+    width: $completion-img-width;
   }
 }
 
@@ -532,9 +520,7 @@ img.mm-media-adapt-width {
 
 .mm-adapted-img-container {
   position: relative;
-  display: inline-block;
 }
-
 .mm-image-viewer-icon {
   position: absolute;
   right: 10px;
@@ -622,10 +608,6 @@ p.mm-error {
   position: absolute !important; // Position fixed causes problems in Android 4.1-4.3.
 }
 
-.mm-zoom-pane {
-  height: 100%;
-}
-
 .mm-has-navigation-bar {
   .iframe-wrapper {
     top: $button-height + 5px;
@@ -702,12 +684,8 @@ mm-timer {
   padding: 0;
 }
 
-.item-input.mm-item-input-padding-right {
-  padding-right: $item-input-padding;
-}
-
 .item-input.item-stacked-label {
-  padding: $item-input-padding;
+  padding: 16px;
 
   .item-input-wrapper.item-select {
     display: block;
@@ -751,6 +729,13 @@ mm-timer {
   }
 }
 
+// This is to allow clicks in radio/checkbox content.
+mm-format-text {
+  audio, video, a, iframe {
+    pointer-events: auto;
+  }
+}
+
 // Squared checkboxes.
 .checkbox input:before, .checkbox-icon:before {
   border-radius: 0;
@@ -781,50 +766,14 @@ mm-timer {
   padding-right: 0;
 }
 
-.item.mm-not-clickable {
-  cursor: default;
-
-  &[ng-click]:hover {
-    cursor: default;
-  }
-
-  &.activated {
-    border-color: $item-default-border;
-    background-color: $item-default-bg;
-  }
-}
-
-.item.mm-tab-handlers,
-.mm-tab-handlers {
+.item.mm-course-handlers {
   padding: 6px 2px;
 
   .tabs {
     background: white;
-    border: 0;
-  }
-  .tabs-icon-round {
-    color: $positive;
-
-    .tab-item.activated {
-      opacity: 0.7;
-    }
-
-    .icon {
-      border-radius: 50%;
-      max-width: 32px;
-      font-size: 22px;
-      line-height: 32px;
-      color: white;
-      background-color: $positive;
-      margin-bottom: 5px;
-
-      &:before {
-        line-height: 32px;
-      }
-    }
   }
 
-  .mm-loading-handlers {
+  .mm-loading-course-handlers {
     padding: 7px;
     padding-bottom: 6px;
   }
@@ -862,20 +811,8 @@ mm-timer {
 
 .mm-textarea {
   width: 100%;
+  height: 200px;
   resize: none;
-
-  &[mm-auto-rows] {
-    height: auto;
-    line-height: 18px;
-    padding: 5px;
-  }
-  &:not([mm-auto-rows]) {
-    height: 200px;
-  }
-}
-
-.item-input-wrapper .mm-textarea {
-  background: transparent;
 }
 
 .item.mm-item-has-rich-text-editor {
@@ -1010,15 +947,15 @@ mm-timer {
   }
 }
 
-// Disable input copy to prevent errors in iOS.
+// Disable textarea copy to prevent errors in iOS.
 
-.previous-input-focus, .previous-input-focus.mm-textarea, .cloned-text-input + input, .cloned-text-input + textarea.mm-textarea {
+.previous-input-focus.mm-textarea, .cloned-text-input + textarea.mm-textarea {
   width: 100%;
   position: relative !important;
   left: 0px;
 }
 
-.cloned-text-input, textarea.cloned-text-input, input.cloned-text-input {
+textarea.cloned-text-input{
   display: none;
 }
 
@@ -1191,136 +1128,4 @@ ion-spinner.mm-spinner-right {
 // Ionic overrides italic font-style, apply it again.
 i, cite, em, var, address, dfn {
     font-style: italic;
-}
-
-// Footer with auto height.
-.bar-footer.bar-footer-adjustable {
-  height: auto;
-}
-
-// Show password styles.
-.item,
-.card .item,
-.list-inset .item,
-.padding > .list .item,
-.padding-horizontal > .list .item {
-
-  &.item-input {
-    padding-right: $item-padding;
-
-    input {
-      padding-right: 0px;
-    }
-
-    .mm-show-password-container {
-      padding: 0px;
-      width: 100%;
-
-      .button {
-        margin-left: ($item-padding / 3) * 2;
-        padding: 0 $button-clear-padding;
-      }
-    }
-  }
-}
-
-.item-button-right > .buttons.buttons-small {
-  min-width: 20px;
-  height: 100%;
-  top: 0;
-
-  > .button.button-icon {
-    min-width: 20px;
-
-    .icon.icon-accessory:before {
-      font-size: 16px;
-    }
-  }
-}
-
-/** Format Text */
-mm-format-text, *[mm-format-text] {
-  audio, video, a, iframe {
-    pointer-events: auto;
-  }
-
-  // Fix lists styles in mm-format-text.
-  ul, ol {
-    -webkit-padding-start: 40px;
-  }
-  ul {
-    list-style: disc;
-  }
-  ol {
-    list-style: decimal;
-  }
-}
-
-mm-format-text[max-height], *[mm-format-text][max-height] {
-  display: block;
-  position: relative;
-  width: 100%;
-
-  /* Force display inline */
-  &.inline {
-    display: inline-block;
-    width: auto;
-  }
-
-  // This is to allow clicks in radio/checkbox content.
-  &.mm-text-formatted {
-    cursor: pointer;
-
-    .mm-show-more {
-      display: none;
-    }
-
-    &:not(.mm-shortened) {
-      max-height: none !important;
-    }
-
-    &.mm-shortened {
-      color: #777;
-      overflow: hidden;
-      min-height: 50px;
-
-      .mm-show-more {
-        color: $dark;
-        text-align: right;
-        font-size: 14px;
-        display: block;
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        z-index: 1001;
-
-        &:after {
-          @extend .ion;
-          content: $ionicon-var-chevron-down;
-          margin-left: 10px;
-          color: $item-icon-accessory-color;
-        }
-      }
-
-      &.mm-expand-in-fullview .mm-show-more:after {
-        content: $ionicon-var-chevron-right;
-      }
-
-      &:before {
-        content: '';
-        height: 100%;
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: -moz-linear-gradient(top, rgba(255, 255, 255, 0) calc(100% - 50px), white calc(100% - 15px));
-        background: -webkit-gradient(left top, left bottom, color-stop(calc(100% - 50px), rgba(255, 255, 255, 0)), color-stop(calc(100% - 15px), white));
-        background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) calc(100% - 50px), white calc(100% - 15px));
-        background: -o-linear-gradient(top, rgba(255, 255, 255, 0) calc(100% - 50px), white calc(100% - 15px));
-        background: -ms-linear-gradient(top, rgba(255, 255, 255, 0) calc(100% - 50px), white calc(100% - 15px));
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0) calc(100% - 50px), white calc(100% - 15px));
-        z-index: 1000;
-      }
-    }
-  }
 }

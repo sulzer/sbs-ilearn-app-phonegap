@@ -188,9 +188,7 @@ angular.module('mm.addons.messages')
                     deviceoffline: $mmApp.isOnline() ? 0 : 1
                 };
 
-            return db.insert(mmaMessagesOfflineMessagesStore, entry).then(function() {
-                return entry;
-            });
+            return db.insert(mmaMessagesOfflineMessagesStore, entry);
         });
     };
 

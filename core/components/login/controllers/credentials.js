@@ -28,9 +28,9 @@ angular.module('mm.core.login')
     $scope.credentials = {
         username: $stateParams.username
     };
-    $scope.siteChecked = false;
 
-    var urlToOpen = $stateParams.urltoopen,
+    var siteChecked = false,
+        urlToOpen = $stateParams.urltoopen,
         siteConfig = $stateParams.siteconfig;
 
     treatSiteConfig(siteConfig);
@@ -43,7 +43,7 @@ angular.module('mm.core.login')
             protocol = siteurl.indexOf('http://') === 0 ? 'http://' : undefined;
         return $mmSitesManager.checkSite(siteurl, protocol).then(function(result) {
 
-            $scope.siteChecked = true;
+            siteChecked = true;
             $scope.siteurl = result.siteurl;
 
             treatSiteConfig(result.config);
@@ -92,7 +92,7 @@ angular.module('mm.core.login')
         // Fixed URL, we need to check if it uses browser SSO login.
         checkSite($scope.siteurl);
     } else {
-        $scope.siteChecked = true;
+        siteChecked = true;
     }
 
     $scope.login = function() {
@@ -104,7 +104,7 @@ angular.module('mm.core.login')
             username = $scope.credentials.username,
             password = $scope.credentials.password;
 
-        if (!$scope.siteChecked) {
+        if (!siteChecked) {
             // Site wasn't checked (it failed), let's check again.
             return checkSite(siteurl).then(function() {
                 if (!$scope.isBrowserSSO) {

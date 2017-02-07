@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-angular.module('mm.core.courses', ['mm.core.contentlinks'])
+angular.module('mm.core.courses', [])
 
 .constant('mmCoursesSearchComponent', 'mmCoursesSearch')
 .constant('mmCoursesSearchPerPage', 20) // Max of courses per page when searching courses.
@@ -57,29 +57,6 @@ angular.module('mm.core.courses', ['mm.core.contentlinks'])
             'site': {
                 templateUrl: 'core/components/courses/templates/viewresult.html',
                 controller: 'mmCoursesViewResultCtrl'
-            }
-        }
-    })
-
-    .state('site.mm_coursescategories', {
-        url: '/mm_coursescategories',
-        params: {
-            categoryid: null
-        },
-        views: {
-            'site': {
-                templateUrl: 'core/components/courses/templates/coursecategories.html',
-                controller: 'mmCourseCategoriesCtrl'
-            }
-        }
-    })
-
-    .state('site.mm_availablecourses', {
-        url: '/mm_availablecourses',
-        views: {
-            'site': {
-                templateUrl: 'core/components/courses/templates/availablecourses.html',
-                controller: 'mmCoursesAvailableCtrl'
             }
         }
     });

@@ -9,5 +9,8 @@
     "wsextservice" : "local_mobile",
     "siteurl" : "https://ilearn.sbs.edu",
     "gcmpn": "908958224806",
-    "customurlscheme": "moodlemobile"
+    "customurlscheme": "moodlemobile",
+    "skipssoconfirmation": "false",
+    "forcedefaultlanguage": "false"
 }
+

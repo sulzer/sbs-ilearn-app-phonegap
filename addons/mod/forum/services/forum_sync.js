@@ -236,16 +236,14 @@ angular.module('mm.addons.mod_forum')
 
             return $q.all(promises);
         }).then(function() {
-            if (result.updated) {
-                // Data has been sent to server. Now invalidate the WS calls.
-                var promises = [];
-                promises.push($mmaModForum.invalidateDiscussionsList(forumId, siteId));
-                promises.push($mmaModForum.invalidateCanAddDiscussion(forumId, siteId));
+            // Data has been sent to server. Now invalidate the WS calls.
+            var promises = [];
+            promises.push($mmaModForum.invalidateDiscussionsList(forumId, siteId));
+            promises.push($mmaModForum.invalidateCanAddDiscussion(forumId, siteId));
 
-                return $q.all(promises).catch(function() {
-                    // Ignore errors.
-                });
-            }
+            return $q.all(promises).catch(function() {
+                // Ignore errors.
+            });
         }).then(function() {
             // Sync finished, set sync time.
             return self.setSyncTime(syncId, siteId).catch(function() {

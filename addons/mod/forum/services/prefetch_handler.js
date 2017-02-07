@@ -21,8 +21,8 @@ angular.module('mm.addons.mod_forum')
  * @ngdoc service
  * @name $mmaModForumPrefetchHandler
  */
-.factory('$mmaModForumPrefetchHandler', function($mmaModForum, mmaModForumComponent, $mmFilepool, $q, $mmUtil, $mmUser,
-            $mmGroups, md5, $mmPrefetchFactory, $mmCoursePrefetchDelegate) {
+.factory('$mmaModForumPrefetchHandler', function($mmaModForum, mmaModForumComponent, $mmFilepool, $mmSite, $q, $mmUtil, $mmUser,
+            $mmGroups, md5, $mmPrefetchFactory) {
 
     var self = $mmPrefetchFactory.createPrefetchHandler(mmaModForumComponent);
 
@@ -167,7 +167,7 @@ angular.module('mm.addons.mod_forum')
      */
     self.getTimemodified = function(module, courseId) {
         return $mmaModForum.getForum(courseId, module.id).then(function(forum) {
-            return getTimemodifiedFromForum(module, forum);
+            return getTimemodifiedFromForum(module, forum, false);
         });
     };
 
@@ -176,25 +176,51 @@ angular.module('mm.addons.mod_forum')
      *
      * @param {Object} module       Module.
      * @param {Object} forum        Forum.
+     * @param {Boolean} getRealTime True to get the real time modified, false to get an approximation (try to minimize WS calls).
      * @return {Promise}            Promise resolved with timemodified.
      */
-    function getTimemodifiedFromForum(module, forum) {
+    function getTimemodifiedFromForum(module, forum, getRealTime) {
         var timemodified = forum.timemodified || 0,
+            siteId = $mmSite.getId(),
             introFiles = self.getIntroFilesFromInstance(module, forum);
 
         // Check intro files timemodified.
         timemodified = Math.max(timemodified, $mmFilepool.getTimemodifiedFromFileList(introFiles));
 
-        // Get the time modified of the most recent discussion and check if it's higher than timemodified.
-        return $mmaModForum.getDiscussions(forum.id, 0).then(function(response) {
-            if (response.discussions && response.discussions[0]) {
-                var discussionTime =  parseInt(response.discussions[0].timemodified, 10);
-                if (!isNaN(discussionTime)) {
-                    timemodified = Math.max(timemodified, discussionTime);
-                }
+        if (getRealTime) {
+            // Get timemodified from discussions to get the real time.
+            return getTimemodifiedFromDiscussions();
+        }
+
+        // To prevent calling getDiscussions if a new discussion is added we'll check forum.numdiscussions first.
+        return $mmFilepool.getPackageRevision(siteId, self.component, module.id).catch(function() {
+            return '';
+        }).then(function(revision) {
+            // Get only the new discussions number stored.
+            revision = '' + revision; // Make sure it's a string.
+            revision = revision.split('#')[0];
+
+            if (parseInt(revision, 10) != forum.numdiscussions) {
+                // Number of discussions has changed, return current time to show refresh button.
+                return $mmUtil.timestamp();
             }
-            return timemodified;
+
+            // Number of discussions hasn't changed.
+            return getTimemodifiedFromDiscussions();
         });
+
+        // Get the time modified of the most recent discussion and check if it's higher than timemodified.
+        function getTimemodifiedFromDiscussions() {
+            return $mmaModForum.getDiscussions(forum.id, 0).then(function(response) {
+                if (response.discussions && response.discussions[0]) {
+                    var discussionTime =  parseInt(response.discussions[0].timemodified, 10);
+                    if (!isNaN(discussionTime)) {
+                        timemodified = Math.max(timemodified, discussionTime);
+                    }
+                }
+                return timemodified;
+            });
+        }
     }
 
     /**
@@ -222,11 +248,6 @@ angular.module('mm.addons.mod_forum')
      * @return {Promise}         Promise resolved when done.
      */
     self.invalidateModule = function(module, courseId) {
-        if ($mmCoursePrefetchDelegate.canCheckUpdates()) {
-            // No need to invalidate anything if can check updates.
-            return $q.when();
-        }
-
         // Get the forum since we need its ID.
         return $mmaModForum.getForum(courseId, module.id).then(function(forum) {
             var promises = [];
@@ -283,7 +304,7 @@ angular.module('mm.addons.mod_forum')
 
             // Get revision and timemodified.
             revision = getRevisionFromForum(forum);
-            return getTimemodifiedFromForum(module, forum);
+            return getTimemodifiedFromForum(module, forum, true);
         }).then(function(time) {
             timemod = time;
 

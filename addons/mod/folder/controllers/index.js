@@ -22,7 +22,7 @@ angular.module('mm.addons.mod_folder')
  * @name mmaModFolderIndexCtrl
  */
 .controller('mmaModFolderIndexCtrl', function($scope, $stateParams, $mmaModFolder, $mmCourse, $mmUtil, $q, $mmText, $translate,
-            mmaModFolderComponent, $mmCourseHelper) {
+            mmaModFolderComponent) {
     var module = $stateParams.module || {},
         courseId = $stateParams.courseid,
         sectionId = $stateParams.sectionid,
@@ -46,10 +46,9 @@ angular.module('mm.addons.mod_folder')
     }
 
     // Convenience function to fetch folder data from Moodle.
-    function fetchFolder(refresh) {
+    function fetchFolder() {
         return $mmCourse.getModule(module.id, courseId, sectionId).then(function(module) {
             showModuleData(module);
-            $mmCourseHelper.fillContextMenu($scope, module, courseId, refresh, mmaModFolderComponent);
         }, function(error) {
             if (error) {
                 $mmUtil.showErrorModal(error);
@@ -60,7 +59,6 @@ angular.module('mm.addons.mod_folder')
             if (!$scope.title) {
                 // Error getting data from server. Use module param.
                 showModuleData(module);
-                $mmCourseHelper.fillContextMenu($scope, module, courseId, refresh, mmaModFolderComponent);
             }
             return $q.reject();
         });
@@ -84,17 +82,6 @@ angular.module('mm.addons.mod_folder')
         });
     }
 
-    // Confirm and Remove action.
-    $scope.removeFiles = function() {
-        $mmCourseHelper.confirmAndRemove(module, courseId);
-    };
-
-    // Context Menu Prefetch action.
-    $scope.prefetch = function() {
-        $mmCourseHelper.contextMenuPrefetch($scope, module, courseId);
-    };
-
-
     // Context Menu Description action.
     $scope.expandDescription = function() {
         $mmText.expandText($translate.instant('mm.core.description'), $scope.description, false, mmaModFolderComponent, module.id);
@@ -104,7 +91,7 @@ angular.module('mm.addons.mod_folder')
         if ($scope.canReload) {
             $scope.refreshIcon = 'spinner';
             return $mmCourse.invalidateModule(module.id).finally(function() {
-                return fetchFolder(true).finally(function() {
+                return fetchFolder().finally(function() {
                     $scope.refreshIcon = 'ion-refresh';
                     $scope.$broadcast('scroll.refreshComplete');
                 });

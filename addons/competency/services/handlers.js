@@ -23,7 +23,7 @@ angular.module('mm.addons.competency')
  * @ngdoc service
  * @name $mmaCompetencyHandlers
  */
-.factory('$mmaCompetencyHandlers', function($log, $mmaCompetency, mmCoursesAccessMethods, mmUserProfileHandlersTypeNewPage) {
+.factory('$mmaCompetencyHandlers', function($log, $mmaCompetency, mmCoursesAccessMethods) {
     $log = $log.getInstance('$mmaCompetencyHandlers');
 
     var self = {},
@@ -201,9 +201,7 @@ angular.module('mm.addons.competency')
      */
     self.learningPlan = function() {
 
-        var self = {
-            type: mmUserProfileHandlersTypeNewPage
-        };
+        var self = {};
 
         /**
          * Check if handler is enabled.

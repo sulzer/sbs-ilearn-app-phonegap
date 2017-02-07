@@ -22,7 +22,7 @@ angular.module('mm.addons.mod_wiki')
  * @name $mmaModWikiPrefetchHandler
  */
 .factory('$mmaModWikiPrefetchHandler', function($mmaModWiki, mmaModWikiComponent, $mmSite, $mmFilepool, $q, $mmGroups, $mmUtil,
-        $mmCourseHelper, $mmCourse, $mmPrefetchFactory, $mmCoursePrefetchDelegate) {
+        $mmCourseHelper, $mmCourse, $mmPrefetchFactory) {
 
     var self = $mmPrefetchFactory.createPrefetchHandler(mmaModWikiComponent);
 
@@ -195,11 +195,6 @@ angular.module('mm.addons.mod_wiki')
      * @return {Promise}         Promise resolved when done.
      */
     self.invalidateModule = function(module, courseId) {
-        if ($mmCoursePrefetchDelegate.canCheckUpdates()) {
-            // No need to invalidate anything if can check updates.
-            return $q.when();
-        }
-
         return $mmaModWiki.getWiki(courseId, module.id, 'coursemodule').then(function(wiki) {
             var promises = [];
 

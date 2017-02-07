@@ -1,4 +1,17 @@
 {
+    "average": "Media",
+    "badgrade": "Nota furnizată nu este corectă",
+    "contributiontocoursetotal": "Contribuția la totalul cursului",
+    "feedback": "Feedback",
+    "grade": "Notă",
+    "grades": "Note",
+    "itemname": "Element al notei",
+    "lettergrade": "Notare prin litere",
     "nogradesreturned": "Nu au fost returnate note",
-    "viewgrades": "Vedeți notele"
+    "nooutcome": "fără rezultat",
+    "percentage": "Procent",
+    "range": "Interval",
+    "rank": "Poziție",
+    "viewgrades": "Vedeți notele",
+    "weight": "Greutate"
 }

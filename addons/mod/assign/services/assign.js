@@ -23,7 +23,7 @@ angular.module('mm.addons.mod_assign')
  */
 .factory('$mmaModAssign', function($mmSite, $q, $mmUser, $mmSitesManager, mmaModAssignComponent, $mmFilepool, $mmComments, $mmUtil,
         $mmaModAssignSubmissionDelegate, mmaModAssignSubmissionStatusNew, mmaModAssignSubmissionStatusSubmitted, $mmText, $mmApp,
-        $mmaModAssignOffline, mmaModAssignGradingStatusGraded, mmaModAssignGradingStatusNotGraded, $mmGrades,
+        $mmaModAssignOffline, mmaModAssignGradingStatusGraded, mmaModAssignGradingStatusNotGraded, $mmAddonManager,
         mmaModMarkingWorkflowStateReleased) {
     var self = {},
         gradingOfflineEnabled = {};
@@ -699,7 +699,12 @@ angular.module('mm.addons.mod_assign')
         }).finally(function() {
             var ps = [];
             ps.push(self.invalidateAssignmentData(courseId, siteId));
-            ps.push($mmGrades.invalidateGradeCourseItems(courseId));
+
+            // Get grade addon if avalaible.
+            var $mmaGrades = $mmAddonManager.get('$mmaGrades');
+            if ($mmaGrades) {
+                ps.push($mmaGrades.invalidateGradeCourseItems(courseId));
+            }
 
             return $q.all(ps);
         });
@@ -1176,7 +1181,17 @@ angular.module('mm.addons.mod_assign')
             return $q.when(gradingOfflineEnabled[siteId]);
         }
 
-        return $mmGrades.isGradeItemsAvalaible(siteId).then(function(enabled) {
+        var promise;
+
+        // Get grade addon if avalaible.
+        var $mmaGrades = $mmAddonManager.get('$mmaGrades');
+        if (!$mmaGrades) {
+            promise = $q.when(false);
+        } else {
+            promise = $mmaGrades.isGradeItemsAvalaible(siteId);
+        }
+
+        return promise.then(function(enabled) {
             gradingOfflineEnabled[siteId] = enabled;
             return enabled;
         });

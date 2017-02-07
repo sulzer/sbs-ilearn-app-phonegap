@@ -32,6 +32,7 @@ angular.module('mm.core.courses')
         enrollmentMethods;
 
     $scope.course = course;
+    $scope.title = course.fullname;
     $scope.component = mmCoursesSearchComponent;
     $scope.handlersShouldBeShown = true;
     $scope.selfEnrolInstances = [];
@@ -182,7 +183,7 @@ angular.module('mm.core.courses')
         });
     };
 
-    if (selfEnrolWSAvailable && course.enrollmentmethods && course.enrollmentmethods.indexOf('self') > -1) {
+    if (selfEnrolWSAvailable && course.enrollmentmethods.indexOf('self') > -1) {
         // Setup password modal for self-enrolment.
         $ionicModal.fromTemplateUrl('core/components/courses/templates/password-modal.html', {
             scope: $scope,

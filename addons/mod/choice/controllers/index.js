@@ -22,11 +22,11 @@ angular.module('mm.addons.mod_choice')
  * @name mmaModChoiceIndexCtrl
  * @todo Delete answer if user can update the answer, show selected if choice is closed (WS returns empty options).
  */
-.controller('mmaModChoiceIndexCtrl', function($scope, $stateParams, $mmaModChoice, $mmUtil, $mmCourseHelper, $q, $mmCourse, $mmText,
+.controller('mmaModChoiceIndexCtrl', function($scope, $stateParams, $mmaModChoice, $mmUtil, $q, $mmCourse, $translate, $mmText,
             mmaModChoiceComponent, mmaModChoiceAutomSyncedEvent, $mmSite, $mmEvents, $mmaModChoiceSync, $ionicScrollDelegate,
-            $mmaModChoiceOffline, $mmApp, $translate, mmCoreEventOnlineStatusChanged) {
+            $mmaModChoiceOffline, $mmApp, $mmEvents, mmCoreEventOnlineStatusChanged) {
     var module = $stateParams.module || {},
-        courseId = $stateParams.courseid,
+        courseid = $stateParams.courseid,
         choice,
         userId = $mmSite.getUserId(),
         scrollView,
@@ -37,7 +37,7 @@ angular.module('mm.addons.mod_choice')
     $scope.description = module.description;
     $scope.moduleUrl = module.url;
     $scope.moduleName = $mmCourse.translateModuleName('choice');
-    $scope.courseId = courseId;
+    $scope.courseid = courseid;
     $scope.refreshIcon = 'spinner';
     $scope.syncIcon = 'spinner';
     $scope.component = mmaModChoiceComponent;
@@ -47,7 +47,7 @@ angular.module('mm.addons.mod_choice')
     function fetchChoiceData(refresh, sync, showErrors) {
         $scope.isOnline = $mmApp.isOnline();
         $scope.now = new Date().getTime();
-        return $mmaModChoice.getChoice(courseId, module.id).then(function(choicedata) {
+        return $mmaModChoice.getChoice(courseid, module.id).then(function(choicedata) {
             choice = choicedata;
             choice.timeopen = parseInt(choice.timeopen) * 1000;
             choice.openTimeReadable = moment(choice.timeopen).format('LLL');
@@ -74,9 +74,6 @@ angular.module('mm.addons.mod_choice')
             return fetchOptions(hasOffline).then(function() {
                 return fetchResults();
             });
-        }).then(function() {
-            // All data obtained, now fill the context menu.
-            $mmCourseHelper.fillContextMenu($scope, module, courseId, refresh, mmaModChoiceComponent);
         }).catch(function(message) {
             if (!refresh) {
                 // Some call failed, retry without using cache since it might be a new activity.
@@ -177,15 +174,11 @@ angular.module('mm.addons.mod_choice')
     function fetchResults() {
         return $mmaModChoice.getResults(choice.id).then(function(results) {
             var hasVotes = false;
-            $scope.data = [];
-            $scope.labels = [];
             angular.forEach(results, function(result) {
                 if (result.numberofuser > 0) {
                     hasVotes = true;
                 }
                 result.percentageamount = parseFloat(result.percentageamount).toFixed(1);
-                $scope.data.push(result.numberofuser);
-                $scope.labels.push(result.text);
             });
             $scope.canSeeResults = hasVotes || $mmaModChoice.canStudentSeeResults(choice, hasAnsweredOnline);
             $scope.results = results;
@@ -204,7 +197,7 @@ angular.module('mm.addons.mod_choice')
 
     // Convenience function to refresh all the data.
     function refreshAllData(sync, showErrors) {
-        var p1 = $mmaModChoice.invalidateChoiceData(courseId),
+        var p1 = $mmaModChoice.invalidateChoiceData(courseid),
             p2 = choice ? $mmaModChoice.invalidateOptions(choice.id) : $q.when(),
             p3 = choice ? $mmaModChoice.invalidateResults(choice.id) : $q.when();
 
@@ -215,7 +208,7 @@ angular.module('mm.addons.mod_choice')
 
     fetchChoiceData(false, true).then(function() {
         $mmaModChoice.logView(choice.id).then(function() {
-            $mmCourse.checkModuleCompletion(courseId, module.completionstatus);
+            $mmCourse.checkModuleCompletion(courseid, module.completionstatus);
         });
     }).finally(function() {
         $scope.choiceLoaded = true;
@@ -240,10 +233,10 @@ angular.module('mm.addons.mod_choice')
             }
 
             var modal = $mmUtil.showModalLoading('mm.core.sending', true);
-            $mmaModChoice.submitResponse(choice.id, choice.name, courseId, responses).then(function() {
+            $mmaModChoice.submitResponse(choice.id, choice.name, courseid, responses).then(function() {
                 // Success!
                 // Check completion since it could be configured to complete once the user answers the choice.
-                $mmCourse.checkModuleCompletion(courseId, module.completionstatus);
+                $mmCourse.checkModuleCompletion(courseid, module.completionstatus);
                 scrollTop();
                 // Let's refresh the data.
                 return refreshAllData(false);
@@ -263,7 +256,7 @@ angular.module('mm.addons.mod_choice')
     $scope.delete = function() {
         $mmUtil.showConfirm($translate('mm.core.areyousure')).then(function() {
             var modal = $mmUtil.showModalLoading('mm.core.sending', true);
-            $mmaModChoice.deleteResponses(choice.id, choice.name, courseId).then(function() {
+            $mmaModChoice.deleteResponses(choice.id, choice.name, courseid).then(function() {
                 scrollTop();
                 // Success! Let's refresh the data.
                 return refreshAllData(false);
@@ -279,15 +272,6 @@ angular.module('mm.addons.mod_choice')
         });
     };
 
-    // Confirm and Remove action.
-    $scope.removeFiles = function() {
-        $mmCourseHelper.confirmAndRemove(module, courseId);
-    };
-
-    // Context Menu Prefetch action.
-    $scope.prefetch = function() {
-        $mmCourseHelper.contextMenuPrefetch($scope, module, courseId);
-    };
     // Context Menu Description action.
     $scope.expandDescription = function() {
         $mmText.expandText($translate.instant('mm.core.description'), $scope.description, false, mmaModChoiceComponent, module.id);
