@@ -15,7 +15,7 @@
     "invalidaccount": "Por favor, verifique sus datos de acceso, o consulte con el administrador para revisar la configuración del sitio.",
     "invalidmoodleversion": "Versión de Moodle inválida. La versión mínima requerida es:",
     "invalidsite": "La URL del sitio es inválida.",
-    "localmobileunexpectedresponse": "Las características adicionales de Moodle Mobile han devuelto una respuesta inesperada, debe autenticarse utilizando el servicio estándar de Mobile.",
+    "localmobileunexpectedresponse": "Las características adicionales de SBS iLearn han devuelto una respuesta inesperada, debe autenticarse utilizando el servicio estándar de Mobile.",
     "login": "Entrar",
     "loginbutton": "Entra!",
     "logininsiterequired": "Para autentificarse en el sitio se ha de abrir una ventana de navegador.",
