@@ -38,7 +38,7 @@
 
     <allow-intent href="*" />
 
-    <preference name="phonegap-version" value="cli-6.5.0" />
+    <preference name="phonegap-version" value="cli-6.3.0" />
     <preference name="orientation"      value="default" />
     <preference name="target-device"    value="universal" />
     <preference name="fullscreen"       value="false" />
@@ -134,7 +134,7 @@
     <gap:plugin name="cordova-plugin-splashscreen" source="npm" />
 	<gap:plugin name="cordova-universal-clipboard" source="npm" />
 
-    <gap:plugin name="phonegap-plugin-push" source="npm" version="1.9.2">
+    <gap:plugin name="phonegap-plugin-push" source="npm" version="1.7.0">
         <param name="SENDER_ID" value="908958224806" />
     </gap:plugin>
     <gap:plugin name="cordova-plugin-customurlscheme" source="npm">
