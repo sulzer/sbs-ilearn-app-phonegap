@@ -21,15 +21,18 @@ angular.module('mm.addons.mod_folder')
  * @ngdoc controller
  * @name mmaModFolderIndexCtrl
  */
-.controller('mmaModFolderIndexCtrl', function($scope, $stateParams, $mmaModFolder, $mmCourse, $mmUtil, $q, $mmText, $translate) {
+.controller('mmaModFolderIndexCtrl', function($scope, $stateParams, $mmaModFolder, $mmCourse, $mmUtil, $q, $mmText, $translate,
+            mmaModFolderComponent, $mmCourseHelper) {
     var module = $stateParams.module || {},
-        courseid = $stateParams.courseid,
-        sectionid = $stateParams.sectionid,
+        courseId = $stateParams.courseid,
+        sectionId = $stateParams.sectionid,
         path = $stateParams.path;
 
     $scope.description = module.description;
     $scope.moduleUrl = module.url;
     $scope.refreshIcon = 'spinner';
+    $scope.component = mmaModFolderComponent;
+    $scope.componentId = module.id;
 
     // Convenience function to set scope data using module.
     function showModuleData(module) {
@@ -43,9 +46,10 @@ angular.module('mm.addons.mod_folder')
     }
 
     // Convenience function to fetch folder data from Moodle.
-    function fetchFolder() {
-        return $mmCourse.getModule(module.id, courseid, sectionid).then(function(module) {
+    function fetchFolder(refresh) {
+        return $mmCourse.getModule(module.id, courseId, sectionId).then(function(module) {
             showModuleData(module);
+            $mmCourseHelper.fillContextMenu($scope, module, courseId, refresh, mmaModFolderComponent);
         }, function(error) {
             if (error) {
                 $mmUtil.showErrorModal(error);
@@ -56,6 +60,7 @@ angular.module('mm.addons.mod_folder')
             if (!$scope.title) {
                 // Error getting data from server. Use module param.
                 showModuleData(module);
+                $mmCourseHelper.fillContextMenu($scope, module, courseId, refresh, mmaModFolderComponent);
             }
             return $q.reject();
         });
@@ -70,7 +75,7 @@ angular.module('mm.addons.mod_folder')
     } else {
         fetchFolder().then(function() {
             $mmaModFolder.logView(module.instance).then(function() {
-                $mmCourse.checkModuleCompletion(courseid, module.completionstatus);
+                $mmCourse.checkModuleCompletion(courseId, module.completionstatus);
             });
         }).finally(function() {
             $scope.folderLoaded = true;
@@ -79,16 +84,27 @@ angular.module('mm.addons.mod_folder')
         });
     }
 
+    // Confirm and Remove action.
+    $scope.removeFiles = function() {
+        $mmCourseHelper.confirmAndRemove(module, courseId);
+    };
+
+    // Context Menu Prefetch action.
+    $scope.prefetch = function() {
+        $mmCourseHelper.contextMenuPrefetch($scope, module, courseId);
+    };
+
+
     // Context Menu Description action.
     $scope.expandDescription = function() {
-        $mmText.expandText($translate.instant('mm.core.description'), $scope.description);
+        $mmText.expandText($translate.instant('mm.core.description'), $scope.description, false, mmaModFolderComponent, module.id);
     };
 
     $scope.refreshFolder = function() {
         if ($scope.canReload) {
             $scope.refreshIcon = 'spinner';
-            $mmCourse.invalidateModule(module.id).finally(function() {
-                fetchFolder().finally(function() {
+            return $mmCourse.invalidateModule(module.id).finally(function() {
+                return fetchFolder(true).finally(function() {
                     $scope.refreshIcon = 'ion-refresh';
                     $scope.$broadcast('scroll.refreshComplete');
                 });

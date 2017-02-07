@@ -172,8 +172,7 @@ angular.module('mm.core.contentlinks')
                 });
             } else {
                 // Get the site URL.
-                var siteUrl = $mmContentLinksDelegate.getSiteUrl(url),
-                    formatted = $mmUtil.formatURL(siteUrl);
+                var siteUrl = $mmContentLinksDelegate.getSiteUrl(url);
                 if (!siteUrl) {
                     $mmUtil.showErrorModal('mm.login.invalidsite', true);
                     return;
@@ -188,13 +187,8 @@ angular.module('mm.core.contentlinks')
                     modal.dismiss(); // Dismiss modal so it doesn't collide with confirms.
 
                     if (!$mmSite.isLoggedIn()) {
-                        if (ssoNeeded) {
-                            // Ask SSO confirmation.
-                            promise = $mmUtil.showConfirm($translate('mm.login.logininsiterequired'));
-                        } else {
-                            // Not logged in and no SSO, no need to confirm.
-                            promise = $q.when();
-                        }
+                        // Not logged in, no need to confirm. If SSO the confirm will be shown later.
+                        promise = $q.when();
                     } else {
                         // Ask the user before changing site.
                         promise = $mmUtil.showConfirm($translate('mm.contentlinks.confirmurlothersite')).then(function() {
@@ -208,7 +202,8 @@ angular.module('mm.core.contentlinks')
 
                     return promise.then(function() {
                         if (ssoNeeded) {
-                            $mmLoginHelper.openBrowserForSSOLogin(result.siteurl, result.code);
+                            $mmLoginHelper.confirmAndOpenBrowserForSSOLogin(
+                                        result.siteurl, result.code, result.service, result.config && result.config.launchurl);
                         } else {
                             $state.go('mm_login.credentials', {
                                 siteurl: result.siteurl,
@@ -314,7 +309,7 @@ angular.module('mm.core.contentlinks')
                                     gotoReview(url, params, courseId, siteId);
                                 } else {
                                     // Not current user and no gotoReview function specified, open it in browser.
-                                    $mmUtil.openInBrowser(url);
+                                    return site.openInBrowserWithAutoLogin(url);
                                 }
                             }).finally(function() {
                                 modal.dismiss();
