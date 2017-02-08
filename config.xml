@@ -3,8 +3,8 @@
         xmlns:gap = "http://phonegap.com/ns/1.0"
         xmlns:android = "http://schemas.android.com/apk/res/android"
         id        = "edu.sbs.ilearn"
-        versionCode = "20170"
-        version   = "1.1.320">
+        versionCode = "20160"
+        version   = "3.2.0">
     <name>SBS iLearn</name>
 
     <description>
@@ -14,9 +14,9 @@
     <author href="https://ilearn.sbs.edu" email="it@sbs.edu">
         SBS Swiss Business School
     </author>
-
+	
     <gap:config-file platform="ios" parent="CFBundleShortVersionString">
-        <string>1.1.320</string>
+        <string>3.2.0</string>
     </gap:config-file>
 
     <gap:platform name="ios" />
@@ -127,10 +127,10 @@
     <gap:plugin name="cordova-universal-clipboard" source="npm" />
 
     <gap:plugin name="phonegap-plugin-push" source="npm" version="1.9.2">
-        <param name="SENDER_ID" value="908958224806" />
+        <param name="SENDER_ID" value="694767596569" />
     </gap:plugin>
     <gap:plugin name="cordova-plugin-customurlscheme" source="npm">
-        <param name="URL_SCHEME" value="ilearn" />
+        <param name="URL_SCHEME" value="moodlemobile" />
     </gap:plugin>
     <gap:plugin name="ionic-plugin-keyboard" source="npm" />
     <gap:plugin name="cordova-plugin-zip" source="npm" />
@@ -285,9 +285,9 @@
                   <string>public.audio</string>
                   <string>public.mp3</string>
                   <string>public.mpeg-4-audio</string>
-                  <string>com.apple.protected-​mpeg-4-audio</string>
+                  <string>com.apple.protected-?mpeg-4-audio</string>
                   <string>public.aifc-audio</string>
-                  <string>com.apple.coreaudio-​format</string>
+                  <string>com.apple.coreaudio-?format</string>
                   <string>public.aiff-audio</string>
                 </array>
             </dict>
@@ -389,14 +389,14 @@
                   <string>public.text</string>
                   <string>public.plain-text</string>
                   <string>public.utf8-plain-text</string>
-                  <string>public.utf16-external-plain-​text</string>
+                  <string>public.utf16-external-plain-?text</string>
                   <string>public.utf16-plain-text</string>
-                  <string>com.apple.traditional-mac-​plain-text</string>
+                  <string>com.apple.traditional-mac-?plain-text</string>
                   <string>public.source-code</string>
                   <string>public.c-source</string>
                   <string>public.objective-c-source</string>
                   <string>public.c-plus-plus-source</string>
-                  <string>public.objective-c-plus-​plus-source</string>
+                  <string>public.objective-c-plus-?plus-source</string>
                   <string>public.c-header</string>
                   <string>public.c-plus-plus-header</string>
                   <string>com.sun.java-source</string>
@@ -461,7 +461,7 @@
                 <string>Alternate</string>
                 <key>LSItemContentTypes</key>
                 <array>
-                  <string>com.microsoft.waveform-​audio</string>
+                  <string>com.microsoft.waveform-?audio</string>
                 </array>
             </dict>
             <dict>
@@ -492,7 +492,7 @@
                 <string>Alternate</string>
                 <key>LSItemContentTypes</key>
                 <array>
-                  <string>com.microsoft.powerpoint.​ppt</string>
+                  <string>com.microsoft.powerpoint.?ppt</string>
                   <string>org.openxmlformats.presentationml.presentation</string>
                 </array>
             </dict>
