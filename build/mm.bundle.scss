@@ -1333,6 +1333,16 @@ mm-format-text[max-height], *[mm-format-text][max-height] {
 .mm-course-module-handler mm-format-text + mm-format-text {
     margin-top: 16px;
 }
+input.mm-fileuploader-picker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  opacity: 0;
+  outline: none;
+}
+
 /* - User grades table (most of it extracted from MM1)
 -------------------------------------------------------------------------- */
 .mm-grades-container {
@@ -1435,16 +1445,6 @@ mm-format-text[max-height], *[mm-format-text][max-height] {
     border-top: 1px solid $item-light-border;
     border-bottom: 1px solid $item-light-border;
   }
-}
-
-input.mm-fileuploader-picker {
-  position: absolute;
-  top: 0;
-  right: 0;
-  min-width: 100%;
-  min-height: 100%;
-  opacity: 0;
-  outline: none;
 }
 
 
@@ -2075,27 +2075,6 @@ $mma-chat-notice-badge: "stable" !default;
 .mma-chat-reconnect-button, .button.mma-chat-reconnect-button {
   margin: 0;
 }
-.mm-site_mod_choice {
-  .chart {
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  @media (min-width: 767px) {
-    .col {
-      border-left: $item-border-width solid $item-default-border;
-
-      &.item, .chart-item {
-        margin-top: 0;
-        border-top: 0;
-      }
-
-      &:first-child {
-        border-left: 0;
-      }
-    }
-  }
-}
 
 .mma-forum-discussion-link {
     text-decoration: none;
@@ -2135,6 +2114,27 @@ $mma-chat-notice-badge: "stable" !default;
 }
 
 
+.mm-site_mod_choice {
+  .chart {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 767px) {
+    .col {
+      border-left: $item-border-width solid $item-default-border;
+
+      &.item, .chart-item {
+        margin-top: 0;
+        border-top: 0;
+      }
+
+      &:first-child {
+        border-left: 0;
+      }
+    }
+  }
+}
 
 $mma-mod-quiz-warning-color:      #c00 !default;
 $mma-mod-quiz-highlight-color:    #d9edf7 !default;
@@ -2700,14 +2700,6 @@ $mma-qbehaviour-deferredcbm-confident-color:    #c00 !default;
 }
 
 
-// Style match content a bit.
-.mma-qtype-match-container {
-  select {
-    padding: 0 36px 0 0;
-    max-width: 100%;
-  }
-}
-
 // Style multianswer content a bit. All these styles are copied from Moodle.
 .mma-qtype-multianswer-container {
   p {
@@ -2752,3 +2744,11 @@ $mma-qbehaviour-deferredcbm-confident-color:    #c00 !default;
   }
 }
 
+
+// Style match content a bit.
+.mma-qtype-match-container {
+  select {
+    padding: 0 36px 0 0;
+    max-width: 100%;
+  }
+}
