@@ -2,21 +2,25 @@
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
         xmlns:android = "http://schemas.android.com/apk/res/android"
-        id        = "edu.sbs.ilearn"
-        versionCode = "20160"
-        version   = "3.2.0">
+        id        = "edu.sbs.ilearnapp"
+        versionCode = "21"
+        version   = "1.1.321">
     <name>SBS iLearn</name>
 
     <description>
-        SBS iLearn
+        The SBS iLearn App enables you to access the SBS iLearn portal from your Android or iOS device.  Browse the content of your courses (even when you are offline), participate in course activities, receive push notifications, quickly find and contact other people in your course, upload files and view your course grades.
     </description>
 
     <author href="https://ilearn.sbs.edu" email="it@sbs.edu">
         SBS Swiss Business School
     </author>
-	
+
     <gap:config-file platform="ios" parent="CFBundleShortVersionString">
-        <string>3.2.0</string>
+        <string>1.1.321</string>
+    </gap:config-file>
+	
+    <gap:config-file platform="ios" parent="CFBundleVersion">
+        <string>201704131645</string>
     </gap:config-file>
 
     <gap:platform name="ios" />
@@ -44,6 +48,7 @@
     <preference name="load-url-timeout" value="60000" />
 
     <preference name="android-minSdkVersion" value="14" />
+    <preference name="android-targetSdkVersion" value="19" />
     <preference name="android-installLocation" value="auto" />
     <preference name="UIWebViewBounce" value="false" />
     <preference name="DisallowOverscroll" value="true" />
@@ -53,6 +58,9 @@
     <feature name="StatusBar">
         <param name="ios-package" value="CDVStatusBar" onload="true"/>
     </feature>
+	<preference name="StatusBarOverlaysWebView" value="false" /> 
+	<preference name="StatusBarBackgroundColor" value="#0a4797" />
+	<preference name="StatusBarStyle" value="lightcontent" />
 
     <preference name="AndroidPersistentFileLocation"    value="Compatibility" />
     <preference name="iosPersistentFileLocation"        value="Compatibility" />
@@ -125,9 +133,10 @@
     <gap:plugin name="cordova-plugin-whitelist" source="npm" />
     <gap:plugin name="cordova-plugin-splashscreen" source="npm" />
     <gap:plugin name="cordova-universal-clipboard" source="npm" />
+    <gap:plugin name="nl.kingsquare.cordova.background-audio" source="npm" />
 
     <gap:plugin name="phonegap-plugin-push" source="npm" version="1.9.2">
-        <param name="SENDER_ID" value="694767596569" />
+        <param name="SENDER_ID" value="908958224806" />
     </gap:plugin>
     <gap:plugin name="cordova-plugin-customurlscheme" source="npm">
         <param name="URL_SCHEME" value="moodlemobile" />
@@ -139,7 +148,7 @@
     <gap:plugin name="ch.ti8m.documenthandler" spec="https://github.com/ti8m/DocumentHandler.git" source="git" />
 
     <gap:config-file platform="android" parent="/manifest">
-         <application android:debuggable="true" />
+         <application android:debuggable="false" />
     </gap:config-file>
 
     <!-- See MOBILE-892 -->
@@ -285,9 +294,9 @@
                   <string>public.audio</string>
                   <string>public.mp3</string>
                   <string>public.mpeg-4-audio</string>
-                  <string>com.apple.protected-?mpeg-4-audio</string>
+                  <string>com.apple.protected-​mpeg-4-audio</string>
                   <string>public.aifc-audio</string>
-                  <string>com.apple.coreaudio-?format</string>
+                  <string>com.apple.coreaudio-​format</string>
                   <string>public.aiff-audio</string>
                 </array>
             </dict>
@@ -389,14 +398,14 @@
                   <string>public.text</string>
                   <string>public.plain-text</string>
                   <string>public.utf8-plain-text</string>
-                  <string>public.utf16-external-plain-?text</string>
+                  <string>public.utf16-external-plain-​text</string>
                   <string>public.utf16-plain-text</string>
-                  <string>com.apple.traditional-mac-?plain-text</string>
+                  <string>com.apple.traditional-mac-​plain-text</string>
                   <string>public.source-code</string>
                   <string>public.c-source</string>
                   <string>public.objective-c-source</string>
                   <string>public.c-plus-plus-source</string>
-                  <string>public.objective-c-plus-?plus-source</string>
+                  <string>public.objective-c-plus-​plus-source</string>
                   <string>public.c-header</string>
                   <string>public.c-plus-plus-header</string>
                   <string>com.sun.java-source</string>
@@ -461,7 +470,7 @@
                 <string>Alternate</string>
                 <key>LSItemContentTypes</key>
                 <array>
-                  <string>com.microsoft.waveform-?audio</string>
+                  <string>com.microsoft.waveform-​audio</string>
                 </array>
             </dict>
             <dict>
@@ -492,7 +501,7 @@
                 <string>Alternate</string>
                 <key>LSItemContentTypes</key>
                 <array>
-                  <string>com.microsoft.powerpoint.?ppt</string>
+                  <string>com.microsoft.powerpoint.​ppt</string>
                   <string>org.openxmlformats.presentationml.presentation</string>
                 </array>
             </dict>
