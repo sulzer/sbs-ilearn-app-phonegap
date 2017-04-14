@@ -25,7 +25,7 @@ angular.module('mm', ['ionic', 'ngCordova', 'angular-md5', 'pascalprecht.transla
         }
         if (window.StatusBar) {
             //StatusBar.styleDefault();
-			StatusBar.styleLightContent();
+			//StatusBar.styleLightContent();
         }
     });
 });
