@@ -33,7 +33,7 @@
     "invalidurl": "URL inválido",
     "invalidvaluemax": "O valor máximo é {{$a}}",
     "invalidvaluemin": "O valor mínimo é {{$a}}",
-    "localmobileunexpectedresponse": "A verificação do SBS iLearn Additional Features teve um erro inesperado, a ligação será feita através do serviço Mobile padrão.",
+    "localmobileunexpectedresponse": "A verificação do Moodle Mobile Additional Features teve um erro inesperado, a ligação será feita através do serviço Mobile padrão.",
     "loggedoutssodescription": "Tem de autenticar-se novamente. A autenticação no site tem de ser numa janela do navegador.",
     "login": "Entrar",
     "loginbutton": "Entrar!",
