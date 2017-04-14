@@ -33,7 +33,7 @@
     "invalidurl": "URL baliogabea",
     "invalidvaluemax": "Gehieneko balioa {{$a}} da.",
     "invalidvaluemin": "Gutxieneko balioa {{$a}} da.",
-    "localmobileunexpectedresponse": "SBS iLearn-ko Funtzio Aurreratuen kontrolak ezusteko erantzuna eman du, Mobile zerbitzu estandarra erabilita autentifikatuko zaitugu.",
+    "localmobileunexpectedresponse": "Moodle Mobile-ko Funtzio Aurreratuen kontrolak ezusteko erantzuna eman du, Mobile zerbitzu estandarra erabilita autentifikatuko zaitugu.",
     "loggedoutssodescription": "Berriz autentifikatu behar duzua. Gunean nabigatzaile leiho baten bitartez hasi behar duzu saioa.",
     "login": "Saioa hasi",
     "loginbutton": "Hasi saioa",

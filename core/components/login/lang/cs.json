@@ -33,7 +33,7 @@
     "invalidurl": "Neplatná URL",
     "invalidvaluemax": "Maximální hodnota je {{$a}}",
     "invalidvaluemin": "Minimální hodnota je {{$a}}",
-    "localmobileunexpectedresponse": "Kontrola rozšířených vlastností SBS iLearn vrátil neočekávanou odezvu, budete ověřen pomocí standardních služeb mobilu .",
+    "localmobileunexpectedresponse": "Kontrola rozšířených vlastností Moodle Mobile vrátil neočekávanou odezvu, budete ověřen pomocí standardních služeb mobilu .",
     "login": "Přihlásit se",
     "loginbutton": "Přihlásit se",
     "logininsiterequired": "Váš Moodlu vás nutí k přihlášení pomocí prohlížeče. Nová instance prohlížeče otevře přesměrování na vaše stránky Moodle.",
