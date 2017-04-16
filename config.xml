@@ -58,6 +58,13 @@
     <feature name="StatusBar">
         <param name="ios-package" value="CDVStatusBar" onload="true"/>
     </feature>
+	
+	<feature name="Custom URL scheme">
+		<param name="id" value="cordova-plugin-customurlscheme" />
+		<param name="url" value="https://github.com/EddyVerbruggen/Custom-URL-scheme.git" />
+		<variable name="URL_SCHEME" value="sbsilearn" />
+    </feature>
+	
 	<preference name="StatusBarOverlaysWebView" value="false" /> 
 	<preference name="StatusBarBackgroundColor" value="#0a4797" />
 	<preference name="StatusBarStyle" value="lightcontent" />
