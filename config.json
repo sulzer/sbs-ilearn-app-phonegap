@@ -10,7 +10,7 @@
     "wsextservice" : "local_mobile",
     "siteurl" : "https://ilearn.sbs.edu",
     "gcmpn": "908958224806",
-    "customurlscheme": "moodlemobile",
+    "customurlscheme": "sbsilearn",
 	"skipssoconfirmation": "false",
     "forcedefaultlanguage": "false",
     "privacypolicy": "https://www.sbs.edu/privacy-policy"
