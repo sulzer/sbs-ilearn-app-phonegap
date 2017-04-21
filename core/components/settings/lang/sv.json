@@ -1,6 +1,6 @@
 {
     "about": "Om",
-    "appname": "SBS iLearn {{version}}",
+    "appname": "SBS iLearn Mobile {{version}}",
     "appready": "Appen är redo",
     "cacheexpirationtime": "Cache utgångs tid (millisekunder)",
     "cordovadevicemodel": "",

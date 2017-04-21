@@ -1,6 +1,6 @@
 {
     "about": "Quant a",
-    "appname": "SBS iLearn {{version}}",
+    "appname": "SBS iLearn Mobile {{version}}",
     "appready": "App preparada",
     "cacheexpirationtime": "Temps de venciment de memòria cau (milisegons)",
     "cannotsyncoffline": "No es poden sincronitzar dades fora de línia.",
@@ -42,6 +42,7 @@
     "navigatorlanguage": "Llenguatge del navegador",
     "navigatoruseragent": "Agent d'usuari del navegador",
     "networkstatus": "Estat de la connexió a Internet",
+    "privacypolicy": "Política de privadesa",
     "reportinbackground": "Informa dels errors automàticament",
     "settings": "Configuració",
     "sites": "Llocs",

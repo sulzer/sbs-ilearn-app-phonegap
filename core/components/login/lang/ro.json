@@ -24,7 +24,7 @@
     "invalidmoodleversion": "Versiunea Moodle este invalidă. Versiunea minimă este 2.4",
     "invalidsite": "Adresa URL este invalidă.",
     "invalidurl": "URL incorect",
-    "localmobileunexpectedresponse": "Verificarea SBS iLearn Additional Features a returnat un răspuns neașteptat. veți fi autentificat folosind serviciul standard.",
+    "localmobileunexpectedresponse": "Verificarea Moodle Mobile Additional Features a returnat un răspuns neașteptat. veți fi autentificat folosind serviciul standard.",
     "login": "Logare",
     "loginbutton": "Logat!",
     "logininsiterequired": "Trebuie sa vă logați pe site într-un browser.",
