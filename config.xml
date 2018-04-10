@@ -16,11 +16,11 @@
     </author>
 
     <gap:config-file platform="ios" parent="CFBundleShortVersionString">
-        <string>3.4.2</string>
+        <string>4.4.2</string>
     </gap:config-file>
 	
     <gap:config-file platform="ios" parent="CFBundleVersion">
-        <string>201804111822</string>
+        <string>201804101822</string>
     </gap:config-file>
 
     <gap:platform name="ios" />
