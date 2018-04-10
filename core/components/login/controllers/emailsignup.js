@@ -26,10 +26,13 @@ angular.module('mm.core.login')
 
     var siteConfig,
         modalInitialized = false,
-        scrollView = $ionicScrollDelegate.$getByHandle('mmLoginEmailSignupScroll');
+        scrollView = $ionicScrollDelegate.$getByHandle('mmLoginEmailSignupScroll'),
+        recaptchaV1Enabled = false;
 
     $scope.siteurl = $stateParams.siteurl;
     $scope.data = {};
+    $scope.verifyAgeData = {};
+    $scope.isMinor = false;
     $scope.escapeForRegex = $mmText.escapeForRegex;
 
     // Setup validation errors.
@@ -45,7 +48,20 @@ angular.module('mm.core.login')
             siteConfig = config;
 
             if (treatSiteConfig(siteConfig)) {
-                return getSignupSettings();
+                // Check content verification.
+                if (typeof $scope.ageDigitalConsentVerification === 'undefined') {
+                    return $mmWS.callAjax('core_auth_is_age_digital_consent_verification_enabled',
+                            {}, {siteurl: $scope.siteurl }).then(function(ageDigitalConsentVerification) {
+
+                        $scope.ageDigitalConsentVerification = ageDigitalConsentVerification.status;
+                    }).catch(function(e) {
+                        // Capture exceptions, fail silently.
+                    }).finally(function() {
+                        return getSignupSettings();
+                    });
+                } else {
+                    return getSignupSettings();
+                }
             }
         }).catch(function(err) {
             $mmUtil.showErrorModal(err);
@@ -56,8 +72,12 @@ angular.module('mm.core.login')
     // Treat the site's config, setting scope variables.
     function treatSiteConfig(siteConfig) {
         if (siteConfig && siteConfig.registerauth == 'email' && !$mmLoginHelper.isEmailSignupDisabled(siteConfig)) {
-            $scope.logourl = siteConfig.logourl || siteConfig.compactlogourl;
+            $scope.sitename = siteConfig.sitename;
             $scope.authInstructions = siteConfig.authinstructions;
+            $scope.ageDigitalConsentVerification = siteConfig.agedigitalconsentverification;
+            $scope.supportName = siteConfig.supportname;
+            $scope.supportEmail = siteConfig.supportemail;
+            $scope.verifyAgeData.country = siteConfig.country;
             initAuthInstructionsModal();
             return true;
         } else {
@@ -74,12 +94,22 @@ angular.module('mm.core.login')
             $scope.settings = settings;
             $scope.countries = $mmUtil.getCountryList();
             $scope.categories = $mmLoginHelper.formatProfileFieldsForSignup(settings.profilefields);
+            recaptchaV1Enabled = !!(settings.recaptchapublickey && settings.recaptchachallengehash &&
+                    settings.recaptchachallengeimage);
 
             if (settings.defaultcity && !$scope.data.city) {
                 $scope.data.city = settings.defaultcity;
             }
             if (settings.country && !$scope.data.country) {
                 $scope.data.country = settings.country;
+            }
+
+            if (recaptchaV1Enabled) {
+                $scope.data.recaptcharesponse = ''; // Reset captcha.
+            }
+
+            if (!$scope.verifyAgeData.country) {
+                $scope.verifyAgeData.country = $scope.data.country;
             }
 
             $scope.namefieldsErrors = {};
@@ -122,11 +152,15 @@ angular.module('mm.core.login')
         });
     };
 
-    // Request another captcha.
-    $scope.requestCaptcha = function() {
+    // Request another captcha (V1).
+    $scope.requestCaptchaV1 = function(ignoreError) {
         var modal = $mmUtil.showModalLoading();
-        $scope.data.recaptcharesponse = '';
-        getSignupSettings().finally(function() {
+        getSignupSettings().catch(function(err) {
+            if (!ignoreError && err) {
+                $mmUtil.showErrorModal(err);
+            }
+            return $q.reject();
+        }).finally(function() {
             modal.dismiss();
         });
     };
@@ -159,9 +193,12 @@ angular.module('mm.core.login')
                 params.redirect = $mmLoginHelper.prepareForSSOLogin($scope.siteurl, service, siteConfig.launchurl);
             }
 
-            if ($scope.settings.recaptchachallengehash && $scope.settings.recaptchachallengeimage) {
-                params.recaptchachallengehash = $scope.settings.recaptchachallengehash;
+            // Get the recaptcha response (if needed).
+            if ($scope.data.recaptcharesponse) {
                 params.recaptcharesponse = $scope.data.recaptcharesponse;
+            }
+            if ($scope.settings.recaptchachallengehash) {
+                params.recaptchachallengehash = $scope.settings.recaptchachallengehash;
             }
 
             // Get the data for the custom profile fields.
@@ -175,26 +212,68 @@ angular.module('mm.core.login')
                         $ionicHistory.goBack();
                     } else {
                         if (result.warnings && result.warnings.length) {
-                            $mmUtil.showErrorModal(result.warnings[0].message);
+                            var error = result.warnings[0].message;
+                            if (error == 'incorrect-captcha-sol') {
+                                error = $translate.instant('mm.login.recaptchaincorrect');
+                            }
+
+                            $mmUtil.showErrorModal(error);
                         } else {
                             $mmUtil.showErrorModal('mm.login.usernotaddederror', true);
                         }
 
-                        // Error sending, request another capctha since the current one is probably invalid now.
-                        $scope.requestCaptcha();
+                        if (recaptchaV1Enabled) {
+                            // Error sending, request another capctha since the current one is probably invalid now.
+                            $scope.requestCaptchaV1(true);
+                        } else {
+                            // Reset captcha (if present).
+                            $scope.$broadcast('mmCore:ResetRecaptchaV2');
+                        }
                     }
                 });
             }).catch(function(error) {
-                if (error) {
-                    $mmUtil.showErrorModal(error);
+                $mmUtil.showErrorModalDefault(error && error.error, 'mm.login.usernotaddederror', true);
+
+                if (recaptchaV1Enabled) {
+                    // Error sending, request another capctha since the current one is probably invalid now.
+                    $scope.requestCaptchaV1(true);
                 } else {
-                    $mmUtil.showErrorModal('mm.login.usernotaddederror', true);
+                    // Reset captcha V2 (if present).
+                    $scope.$broadcast('mmCore:ResetRecaptchaV2');
                 }
-                // Error sending, request another capctha since the current one is probably invalid now.
-                $scope.requestCaptcha();
             }).finally(function() {
                 modal.dismiss();
             });
         }
+    };
+
+    // Verify Age.
+    $scope.verifyAge = function(verifyAgeForm) {
+        if (verifyAgeForm.$valid) {
+            var modal = $mmUtil.showModalLoading();
+            params = {
+                age: parseInt($scope.verifyAgeData.age),    // Use just the integer part.
+                country: $scope.verifyAgeData.country
+            };
+            $mmWS.callAjax('core_auth_is_minor', params, {siteurl: $scope.siteurl}).then(function(result) {
+                if (!result.status) {
+                    // Not a minor, go ahead!
+                    $scope.ageDigitalConsentVerification = false;
+                } else {
+                    // Is a minor!!
+                    $scope.isMinor = true;
+                }
+            }).catch(function() {
+                // Something wrong, redirect to the site.
+                $mmUtil.showErrorModal('There was an error verifying your age, please try again using the browser.');
+            }).finally(function() {
+                modal.dismiss();
+            });
+        }
+    };
+
+    // Show contact information on site (we have to display again the age verification form).
+    $scope.showContactOnSite = function() {
+        $mmUtil.openInBrowser($scope.siteurl + '/login/verify_age_location.php');
     };
 });

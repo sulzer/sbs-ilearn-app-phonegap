@@ -3,7 +3,7 @@
     "createpage": "Seite erstellen",
     "editingpage": "Die Seite '{{$a}}' wird bearbeitet",
     "errorloadingpage": "Fehler beim Laden der Seite",
-    "errornowikiavailable": "Dieses Wiki hat bisher keinen Inhalt.",
+    "errornowikiavailable": "Dieses Wiki hat noch keinen Inhalt.",
     "gowikihome": "Zur Wiki-Startseite",
     "map": "Spezialseiten",
     "newpagehdr": "Neue Seite",
@@ -14,7 +14,7 @@
     "pageexists": "Diese Seite existiert bereits.",
     "pagename": "Seitenname",
     "subwiki": "Teilwiki",
-    "titleshouldnotbeempty": "Der Titel sollte nicht leer sein.",
+    "titleshouldnotbeempty": "Der Titel kann nicht leer sein.",
     "viewpage": "Seite anzeigen",
     "wikipage": "Wiki-Seite",
     "wrongversionlock": "Jemand anderes hat die Seite aktualisiert, während Sie daran gearbeitet haben. Deswegen ist der von Ihnen verwendete Seiteninhalt veraltet."

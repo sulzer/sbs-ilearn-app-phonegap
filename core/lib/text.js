@@ -93,6 +93,10 @@ angular.module('mm.core')
         if (!text) {
             return '';
         }
+        if (!text.replace) {
+            // Not a string, leave it as it is.
+            return text;
+        }
 
         // First, we use a regexpr.
         text = text.replace(/(<([^>]+)>)/ig,"");
@@ -464,12 +468,9 @@ angular.module('mm.core')
         text = self.decodeHTMLEntities(text);
         // Replace underscores (which are classed as word characters) with spaces.
         text = text.replace(/_/gi, " ");
-        // Remove any characters that shouldn't be treated as word boundaries.
-        text = text.replace(/[\'"’-]/gi, "");
-        // Remove dots and commas from within numbers only.
-        text = text.replace(/([0-9])[.,]([0-9])/gi, '$1$2');
 
-        return text.split(/\w\b/gi).length - 1;
+        // This RegEx will detect any word change including Unicode chars. Some languages without spaces won't be counted fine.
+        return text.match(/\S+/gi).length;
     };
 
     /**
@@ -478,12 +479,12 @@ angular.module('mm.core')
      * @module mm.core
      * @ngdoc method
      * @name $mmText#getTextPluginfileUrl
-     * @param  {Object[]} files Files to extract the URL from. They need to have the URL in a 'fileurl' attribute.
+     * @param  {Object[]} files Files to extract the URL from. They need to have the URL in a 'url' or 'fileurl' attribute.
      * @return {String}         Pluginfile URL, false if no files found.
      */
     self.getTextPluginfileUrl = function(files) {
         if (files && files.length) {
-            var fileURL = files[0].fileurl;
+            var fileURL = files[0].url || files[0].fileurl;
             // Remove text after last slash (encoded or not).
             return fileURL.substr(0, Math.max(fileURL.lastIndexOf('/'), fileURL.lastIndexOf('%2F')));
         }
@@ -498,7 +499,7 @@ angular.module('mm.core')
      * @ngdoc method
      * @name $mmText#replacePluginfileUrls
      * @param  {String} text    Text to treat.
-     * @param  {Object[]} files Files to extract the pluginfile URL from. They need to have the URL in a 'fileurl' attribute.
+     * @param  {Object[]} files Files to extract the pluginfile URL from. They need to have the URL in a 'url'/'fileurl' attribute.
      * @return {String}         Treated text.
      */
     self.replacePluginfileUrls = function(text, files) {
@@ -518,7 +519,7 @@ angular.module('mm.core')
      * @ngdoc method
      * @name $mmText#restorePluginfileUrls
      * @param  {String} text    Text to treat.
-     * @param  {Object[]} files Files to extract the pluginfile URL from.  They need to have the URL in a 'fileurl' attribute.
+     * @param  {Object[]} files Files to extract the pluginfile URL from.  They need to have the URL in a 'url'/'fileurl' attribute.
      * @return {String}         Treated text.
      */
     self.restorePluginfileUrls = function(text, files) {
@@ -681,6 +682,57 @@ angular.module('mm.core')
             // Error, use the original URI.
         }
         return uri;
+    };
+
+    /**
+     * Same as Javascript's JSON.parse, but if an exception is thrown it will return the original text.
+     *
+     * @module mm.core
+     * @ngdoc method
+     * @name $mmText#parseJSON
+     * @param  {String} json JSON text.
+     * @return {Mixed}       JSON parsed as object or what it gets.
+     */
+    self.parseJSON = function(json) {
+        try {
+            return JSON.parse(json);
+        } catch(ex) {
+            // Error, use the json text.
+        }
+        return json;
+    };
+
+    /**
+     * Add quotes to HTML characters.
+     *
+     * Returns text with HTML characters (like "<", ">", etc.) properly quoted.
+     * Based on Moodle's s() function.
+     *
+     * @module mm.core
+     * @ngdoc method
+     * @name $mmText#s
+     * @param  {String} text Text to treat.
+     * @return {String}      Treated text.
+     */
+    self.s = function(text) {
+        if (!text && text !== '') {
+            return '0';
+        }
+
+        return self.escapeHTML(text).replace(/&amp;#(\d+|x[0-9a-f]+);/i, '&#$1;');
+    };
+
+    /**
+     * Make a string's first character uppercase
+     *
+     * @module mm.core
+     * @ngdoc method
+     * @name $mmText#ucFirst
+     * @param  {String} text Text to treat.
+     * @return {String}      Treated text.
+     */
+    self.ucFirst = function(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
     };
 
     return self;

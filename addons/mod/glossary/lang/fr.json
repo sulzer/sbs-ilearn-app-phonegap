@@ -1,6 +1,6 @@
 {
-    "attachment": "Annexe",
-    "browsemode": "Parcourir les articles",
+    "attachment": "Joindre le badge à un courriel",
+    "browsemode": "Mode prévisualisation",
     "byalphabet": "Alphabétiquement",
     "byauthor": "Grouper par auteur",
     "bycategory": "Grouper par catégorie",
@@ -8,7 +8,7 @@
     "byrecentlyupdated": "Modifiés récemment",
     "bysearch": "Rechercher",
     "cannoteditentry": "Impossible de modifier l'article",
-    "casesensitive": "Casse des caractères",
+    "casesensitive": "Utiliser les expressions régulières",
     "categories": "Catégories de cours",
     "entriestobesynced": "Articles à synchroniser",
     "entrypendingapproval": "Cet article est en attente d'approbation",

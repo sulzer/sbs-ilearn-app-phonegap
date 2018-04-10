@@ -1,10 +1,14 @@
 {
     "addanewdiscussion": "Afegeix un tema de debat nou",
+    "addanewquestion": "Afegeix una pregunta nova",
+    "addanewtopic": "Afegeix un tema nou",
     "cannotadddiscussion": "Afegir debats en aquest fòrum requereix pertànyer al grup.",
     "cannotadddiscussionall": "No teniu permís per a afegir un tema de debat nou per a tots els participants.",
     "cannotcreatediscussion": "No s'ha pogut obrir un debat nou",
     "couldnotadd": "Un error desconegut ha impedit afegir el vostre missatge",
     "discussion": "Debat",
+    "discussionlocked": "Aquest fil de debat ha finalitzat, així que no admet respostes.",
+    "discussionpinned": "Fixat",
     "discussionsubscription": "Subscripció als debats",
     "edit": "Edita",
     "erroremptymessage": "El missatge no pot estar buit",
@@ -24,8 +28,6 @@
     "refreshdiscussions": "Actualitza els debats",
     "refreshposts": "Actualitza els missatges",
     "reply": "Respon",
-    "sortnewestfirst": "Mostra els més recents primer",
-    "sortoldestfirst": "Mostra els més antics primer",
     "subject": "Assumpte",
     "unread": "No llegit",
     "unreadpostsnumber": "{{$a}} missatges no llegits"

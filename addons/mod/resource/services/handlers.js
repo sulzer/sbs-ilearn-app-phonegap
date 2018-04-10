@@ -112,6 +112,9 @@ angular.module('mm.addons.mod_resource')
                     } else {
                         $scope.icon = $mmCourse.getModuleIconSrc('resource');
                     }
+                }).finally(function() {
+                    // Get current status to decide which icon should be shown.
+                    $mmCoursePrefetchDelegate.getModuleStatus(module, courseId).then(showStatus);
                 });
 
                 $scope.action = function(e) {
@@ -156,6 +159,8 @@ angular.module('mm.addons.mod_resource')
 
                 // Show buttons according to module status.
                 function showStatus(status) {
+                    status = $mmaModResourcePrefetchHandler.determineStatus(status, false, module);
+
                     if (status) {
                         $scope.spinner = status === mmCoreDownloading;
                         downloadBtn.hidden = status !== mmCoreNotDownloaded;
@@ -171,9 +176,6 @@ angular.module('mm.addons.mod_resource')
                         showStatus(data.status);
                     }
                 });
-
-                // Get current status to decide which icon should be shown.
-                $mmCoursePrefetchDelegate.getModuleStatus(module, courseId).then(showStatus);
 
                 $scope.$on('$destroy', function() {
                     statusObserver && statusObserver.off && statusObserver.off();
@@ -192,6 +194,51 @@ angular.module('mm.addons.mod_resource')
      * @name $mmaModResourceHandlers#linksHandler
      */
     self.linksHandler = $mmContentLinksHelper.createModuleIndexLinkHandler('mmaModResource', 'resource', $mmaModResource);
+
+    /**
+     * Plugin file handler.
+     *
+     * @module mm.addons.mod_resource
+     * @ngdoc method
+     * @name $mmaModResourceHandlers#pluginfileHandler
+     */
+    self.pluginfileHandler = function() {
+        var self = {};
+
+        /**
+         * Get the RegExp of the component and filearea described in the URL.
+         *
+         * @module mm.addons.mod_resource
+         * @ngdoc method
+         * @name $mmaModResourcePluginfileHandler#getComponentRevisionRegExp
+         * @param {Array} args    Arguments of the pluginfile URL defining component and filearea at least.
+         * @return {RegExp}       To match the revision.
+         */
+        self.getComponentRevisionRegExp = function(args) {
+            // Check filearea.
+            if (args[2] == 'content') {
+                // Component + Filearea + Revision
+                return new RegExp('/mod_resource/content/([0-9]+)/');
+            }
+            return false;
+        };
+
+        /**
+         * Returns an string to remove revision when matching the RegExp provided.
+         *
+         * @module mm.addons.mod_resource
+         * @ngdoc method
+         * @name $mmaModResourcePluginfileHandler#getComponentRevisionReplace
+         * @param {Array} args    Arguments of the pluginfile URL defining component and filearea at least.
+         * @return {String}       String to remove revision when matching the RegExp provided.
+         */
+        self.getComponentRevisionReplace = function(args) {
+            // Component + Filearea + Revision
+            return '/mod_resource/content/0/';
+        };
+
+        return self;
+    };
 
     return self;
 });

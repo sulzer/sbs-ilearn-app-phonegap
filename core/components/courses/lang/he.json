@@ -11,7 +11,10 @@
     "nocoursesyet": "אין קורסים בקטגוריה זו",
     "nosearchresults": "לחיפוש שלך לא היו תוצאות",
     "notenroled": "אינך רשום לקורס זה",
-    "password": "סיסמה",
+    "password": "סיסמה (secret)",
+    "paymentrequired": "קורס זה מצריך תשלום לכניסה",
+    "paypalaccepted": "התקבלו תשלומי Paypal",
     "search": "חיפוש",
-    "searchcourses": "חיפוש קורסים"
+    "searchcourses": "חיפוש קורסים",
+    "sendpaymentbutton": "שליחת תשלום דרך Paypal"
 }

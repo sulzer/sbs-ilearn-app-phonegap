@@ -191,7 +191,7 @@ angular.module('mm.core.contentlinks')
                 }
 
                 if (handler.instance && handler.instance.handles) {
-                    var siteUrl = handler.instance.handles(url);
+                    var siteUrl = handler.instance.getHandlerUrl(url);
                     if (siteUrl) {
                         return siteUrl;
                     }
@@ -211,7 +211,7 @@ angular.module('mm.core.contentlinks')
 
             // Sort by priority.
             actions = actions.sort(function(a, b) {
-                return a.priority > b.priority;
+                return a.priority >= b.priority ? 1 : -1;
             });
 
             // Fill result array.

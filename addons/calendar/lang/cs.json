@@ -1,7 +1,8 @@
 {
     "calendarevents": "Kalendář událostí",
+    "defaultnotificationtime": "Výchozí čas oznámení",
     "errorloadevent": "Chyba při načítání události.",
     "errorloadevents": "Chyba při načítání událostí.",
-    "noevents": "Nejsou žádné události",
-    "notifications": "Upozornění"
+    "noevents": "Žádné nadcházející činnosti",
+    "notifications": "Informace"
 }
