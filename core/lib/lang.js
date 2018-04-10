@@ -39,11 +39,15 @@ angular.module('mm.core')
      * @return {Promise}        Promise resolved when the change is finished.
      */
     self.changeCurrentLanguage = function(language) {
-        var p1 = $translate.use(language),
-            p2 = $mmConfig.set('current_language', language);
+        var promises = [];
+
+        promises.push($translate.use(language));
+        promises.push($translate.preferredLanguage(language));
+        promises.push($mmConfig.set('current_language', language));
+
         moment.locale(language);
         currentLanguage = language;
-        return $q.all([p1, p2]);
+        return $q.all(promises);
     };
 
     /**
@@ -189,15 +193,7 @@ angular.module('mm.core')
      */
     self.registerLanguageFolder = function(path) {
         $translatePartialLoader.addPart(path);
-        // We refresh the languages one by one because if we refresh all of them at once and 1 file isn't found
-        // then no language will be loaded. This way if 1 language file is missing only that language won't be refreshed.
-        var promises = [];
-        promises.push($translate.refresh(currentLanguage));
-        if (currentLanguage !== fallbackLanguage) {
-            // Refresh fallback language.
-            promises.push($translate.refresh(fallbackLanguage));
-        }
-        return $q.all(promises);
+        return $translate.refresh();
     };
 
     /**
@@ -238,10 +234,19 @@ angular.module('mm.core')
     return self;
 })
 
+// Factory to handle errors loading language strings.
+.factory('$mmLangErrorHandler', function($q) {
+    return function() {
+        // A lang part failed to load, probably because a remote addon lacks a language file. Ignore errors.
+        return $q.when({});
+    };
+})
+
 .config(function($translateProvider, $translatePartialLoaderProvider, mmCoreConfigConstants) {
 
     $translateProvider.useLoader('$translatePartialLoader', {
-        urlTemplate: '{part}/{lang}.json'
+        urlTemplate: '{part}/{lang}.json',
+        loadFailureHandler: '$mmLangErrorHandler'
     });
 
     // Load the built language files from build/lang.
@@ -249,31 +254,51 @@ angular.module('mm.core')
 
     // Set fallback language and language to use until the app determines the right language to use.
     var lang = mmCoreConfigConstants.default_lang || 'en';
-    $translateProvider.fallbackLanguage(lang);
+    $translateProvider.fallbackLanguage('en'); // Always use English as fallback language.
     $translateProvider.preferredLanguage(lang);
 })
 
-.config(function($provide) {
+.config(function($provide, $translateProvider) {
     // Decorate $translate to use custom strings if needed.
     $provide.decorator('$translate', ['$delegate', '$q', '$injector', function($delegate, $q, $injector) {
         var $mmLang; // Inject it using $injector to prevent circular dependencies.
+        var translationsTable = $translateProvider.translations();
 
         // Redefine $translate default function.
         var newTranslate = function(translationId, interpolateParams, interpolationId, defaultTranslationText, forceLanguage) {
+
+            var originalString = null;
             var value = getCustomString(translationId, forceLanguage);
             if (value !== false) {
-                return $q.when(value);
+                language = forceLanguage || $delegate.preferredLanguage();
+                originalString = translationsTable[language][translationId]; // May be undefined for new strings.
+                translationsTable[language][translationId] = value;
             }
-            return $delegate(translationId, interpolateParams, interpolationId, defaultTranslationText, forceLanguage);
+            return $delegate(translationId, interpolateParams, interpolationId, defaultTranslationText, forceLanguage)
+            .finally(function() {
+                if (originalString) {
+                    // Recover original translation.
+                    translationsTable[language][translationId] = originalString;
+                }
+            });
         };
 
         // Redefine $translate.instant.
         newTranslate.instant = function(translationId, interpolateParams, interpolationId, forceLanguage, sanitizeStrategy) {
+
+            var originalString = null;
             var value = getCustomString(translationId, forceLanguage);
             if (value !== false) {
-                return value;
+                language = forceLanguage || $delegate.preferredLanguage();
+                originalString = translationsTable[language][translationId]; // May be undefined for new strings.
+                translationsTable[language][translationId] = value;
             }
-            return $delegate.instant(translationId, interpolateParams, interpolationId, forceLanguage, sanitizeStrategy);
+            translation = $delegate.instant(translationId, interpolateParams, interpolationId, forceLanguage, sanitizeStrategy);
+            if (originalString) {
+                // Recover original translation.
+                translationsTable[language][translationId] = originalString;
+            }
+            return translation;
         };
 
         // Copy the rest of functions and properties.
@@ -306,6 +331,7 @@ angular.module('mm.core')
     $ionicPlatform.ready(function() {
         $mmLang.getCurrentLanguage().then(function(language) {
             $translate.use(language);
+            $translate.preferredLanguage(language);
             moment.locale(language);
         });
     });

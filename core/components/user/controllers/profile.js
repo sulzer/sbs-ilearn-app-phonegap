@@ -23,7 +23,7 @@ angular.module('mm.core.user')
  */
 .controller('mmUserProfileCtrl', function($scope, $stateParams, $mmUtil, $mmUser, $mmUserDelegate, $mmSite, $translate, $mmCourses,
             $q, $mmEvents, $mmFileUploaderHelper, $mmSitesManager, mmUserEventProfileRefreshed, mmUserProfilePictureUpdated,
-            mmUserProfileHandlersTypeNewPage, mmUserProfileHandlersTypeCommunication, mmUserProfileHandlersTypeAction) {
+            mmUserProfileHandlersTypeNewPage, mmUserProfileHandlersTypeCommunication, mmUserProfileHandlersTypeAction, $mmFS) {
 
     $scope.courseId = $stateParams.courseid;
     $scope.userId   = $stateParams.userid;
@@ -113,13 +113,16 @@ angular.module('mm.core.user')
     $scope.changeProfilePicture = function() {
         var maxSize = -1;
         var title = $translate.instant('mm.user.newpicture');
-        var filterMethods = ['album', 'camera'];
+        var mimetypes = $mmFS.getGroupMimeInfo('image', 'mimetypes');
 
-        return $mmFileUploaderHelper.selectAndUploadFile(maxSize, title, filterMethods).then(function(result) {
+        return $mmFileUploaderHelper.selectAndUploadFile(maxSize, title, undefined, mimetypes).then(function(result) {
+            var modal = $mmUtil.showModalLoading('mm.core.sending', true);
             return $mmUser.changeProfilePicture(result.itemid, $scope.userId).then(function(profileimageurl) {
                 $mmEvents.trigger(mmUserProfilePictureUpdated, {userId: $scope.userId, picture: profileimageurl});
                 $mmSitesManager.updateSiteInfo($mmSite.getId());
                 $scope.refreshUser();
+            }).finally(function() {
+                modal.dismiss();
             });
         }).catch(function(message) {
             if (message) {

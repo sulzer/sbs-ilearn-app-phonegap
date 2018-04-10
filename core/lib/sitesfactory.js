@@ -77,10 +77,13 @@ angular.module('mm.core')
      */
     this.registerStore = function(store) {
         if (typeof(store.name) === 'undefined') {
-            console.log('$mmSite: Error: store name is undefined.');
+            console.error('$mmSite: Error: store name is undefined.');
+            return;
+        } else if (typeof store.keyPath  === 'undefined' || !store.keyPath) {
+            console.error('$mmSite: Error: store ' + store.name + ' keyPath is invalid.');
             return;
         } else if (storeExists(store.name)) {
-            console.log('$mmSite: Error: store ' + store.name + ' is already defined.');
+            console.error('$mmSite: Error: store ' + store.name + ' is already defined.');
             return;
         }
         store.indexes = getIndexes(store.indexes);
@@ -246,7 +249,10 @@ angular.module('mm.core')
                 '2.9': 2015051100,
                 '3.0': 2015111600,
                 '3.1': 2016052300,
-                '3.2': 2016120500
+                '3.2': 2016120500,
+                '3.3': 2017051500,
+                '3.4': 2017111300,
+                '3.5': 2018051200 // @todo: Replace with the right version when released.
             };
 
         /**

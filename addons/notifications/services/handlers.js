@@ -23,11 +23,38 @@ angular.module('mm.addons.notifications')
  * @ngdoc service
  * @name $mmaNotificationsHandlers
  */
-.factory('$mmaNotificationsHandlers', function($log, $mmaNotifications, $mmEvents, $mmSitesManager, $mmUtil,
-        mmaNotificationsReadChangedEvent, mmaNotificationsReadCronEvent, $mmAddonManager) {
+.factory('$mmaNotificationsHandlers', function($log, $mmaNotifications, $mmEvents, $mmSitesManager, $mmUtil, $mmSite,
+        mmaNotificationsReadChangedEvent, mmaNotificationsReadCronEvent, $mmAddonManager, $mmApp, $mmLocalNotifications,
+        $mmEmulatorHelper, $mmText, mmaNotificationsPushSimulationComponent) {
     $log = $log.getInstance('$mmaNotificationsHandlers');
 
     var self = {};
+
+    /**
+     * Get the latest unread notifications from a site.
+     *
+     * @param  {String} siteId Site ID.
+     * @return {Promise}       Promise resolved with the notifications.
+     */
+    function fetchNotifications(siteId) {
+        return $mmaNotifications.getUnreadNotifications(0, undefined, true, false, true, siteId);
+    }
+
+    /**
+     * Given a notification, return the title and the text for the notification.
+     *
+     * @param  {Object} notification Notification.
+     * @return {Object}              Object with title and text.
+     */
+    function getTitleAndText(notification) {
+        var data = {
+                title: notification.userfromfullname,
+                text: notification.mobiletext.replace(/-{4,}/ig, '')
+            };
+        data.text = $mmText.replaceNewLines(data.text, '<br>');
+
+        return data;
+    }
 
     /**
      * Side menu nav handler.
@@ -106,7 +133,8 @@ angular.module('mm.addons.notifications')
                     }
 
                     function updateUnreadNotificationsCount(siteId) {
-                        return $mmaNotifications.getUnreadNotificationsCount().then(function(unread) {
+                        siteId = siteId || $mmSite.getId();
+                        return $mmaNotifications.getUnreadNotificationsCount(undefined, siteId).then(function(unread) {
                             // Leave badge enter if there is a 0+ or a 0.
                             $scope.badge = parseInt(unread, 10) > 0 ? unread : '';
                             // Update badge.
@@ -141,6 +169,11 @@ angular.module('mm.addons.notifications')
                     siteid: siteId
                 });
             }
+
+            if ($mmApp.isDesktop() && $mmLocalNotifications.isAvailable()) {
+                $mmEmulatorHelper.checkNewNotifications(
+                        mmaNotificationsPushSimulationComponent, fetchNotifications, getTitleAndText, siteId);
+            }
         };
 
         /**
@@ -149,7 +182,7 @@ angular.module('mm.addons.notifications')
          * @return {Number} Time between consecutive executions (in ms).
          */
         self.getInterval = function() {
-            return 600000; // 10 minutes.
+            return $mmApp.isDesktop() ? 60000 : 600000; // 1 or 10 minutes.
         };
 
         /**
@@ -158,8 +191,9 @@ angular.module('mm.addons.notifications')
          * @return {Boolean} True if is a sync process, false otherwise.
          */
         self.isSync = function() {
-            // This is done to use only wifi if using the fallback function
-            return !$mmaNotifications.isNotificationCountEnabled();
+            // This is done to use only wifi if using the fallback function.
+            // In desktop it is always sync, since it fetches notification to see if there's a new one.
+            return !$mmaNotifications.isNotificationCountEnabled() || $mmApp.isDesktop();
         };
 
         /**
@@ -200,7 +234,7 @@ angular.module('mm.addons.notifications')
          * @return {Boolean} True if handler is enabled, false otherwise.
          */
         self.isEnabled = function() {
-            return $mmaNotifications.isNotificationPreferencesEnabled();
+            return true;
         };
 
         /**

@@ -333,6 +333,8 @@ angular.module('mm.core')
                     // Store session.
                     self.login(siteId);
                     $mmEvents.trigger(mmCoreEventSiteAdded, siteId);
+
+                    return siteId;
                 });
             } else {
                 return $mmLang.translateAndReject('mm.login.invalidmoodleversion');
@@ -673,6 +675,33 @@ angular.module('mm.core')
     };
 
     /**
+     * Return sites sorted by URL and fullname.
+     *
+     * @module mm.core
+     * @ngdoc method
+     * @name $mmSitesManager#sortSites
+     * @param  {Array} sites Sites unsorted.
+     * @return {Array}       Sites sorted by URL and fullname.
+     */
+    self.sortSites = function(sites) {
+        return sites.sort(function(a, b) {
+            // First compare by site url without the protocol.
+            var compareA = a.siteurl.toLowerCase(),
+                compareB = b.siteurl.toLowerCase(),
+                compare = compareA.localeCompare(compareB);
+
+            if (compare !== 0) {
+                return compare;
+            }
+
+            // If site url is the same, use fullname instead.
+            compareA = a.fullname.toLowerCase().trim();
+            compareB = b.fullname.toLowerCase().trim();
+            return compareA.localeCompare(compareB);
+        });
+    };
+
+    /**
      * Get the list of IDs of sites stored.
      *
      * @module mm.core
@@ -911,7 +940,7 @@ angular.module('mm.core')
         // Check if URL has http(s) protocol.
         if (!url.match(/^https?:\/\//i)) {
             // URL doesn't have http(s) protocol. Check if it has any protocol.
-            if (url.match(/^[^:]{2,10}:\/\//i)) {
+            if ($mmUtil.isAbsoluteURL(url)) {
                 // It has some protocol. Return empty array.
                 return $q.when([]);
             } else {

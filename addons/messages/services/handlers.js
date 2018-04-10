@@ -25,10 +25,42 @@ angular.module('mm.addons.messages')
  */
 .factory('$mmaMessagesHandlers', function($log, $mmaMessages, $mmSite, $state, $mmUtil, $mmContentLinksHelper, $mmaMessagesSync,
             $mmSitesManager, mmUserProfileHandlersTypeCommunication, mmUserProfileHandlersTypeAction, $translate,
-            mmaMessagesReadChangedEvent, $mmEvents, mmaMessagesReadCronEvent, $mmAddonManager, $mmContentLinkHandlerFactory) {
+            mmaMessagesReadChangedEvent, $mmEvents, mmaMessagesReadCronEvent, $mmAddonManager, $mmContentLinkHandlerFactory,
+            $mmText, $mmApp, $mmLocalNotifications, $mmEmulatorHelper, mmaMessagesPushSimulationComponent) {
     $log = $log.getInstance('$mmaMessagesHandlers');
 
     var self = {};
+
+    /**
+     * Get the latest unread received messages from a site.
+     *
+     * @param  {String} siteId Site ID.
+     * @return {Promise}       Promise resolved with the notifications.
+     */
+    function fetchMessages(siteId) {
+        return $mmaMessages.getUnreadReceivedMessages(true, false, true, siteId).then(function(response) {
+            return response.messages;
+        });
+    }
+
+    /**
+     * Given a message, return the title and the text for the message.
+     *
+     * @param  {Object} message Message.
+     * @return {Promise}        Promise resolved with an object with title and text.
+     */
+    function getTitleAndText(message) {
+        var data = {
+                title: message.userfromfullname,
+            };
+
+        return $mmText.formatText(message.text, true, true).catch(function() {
+            return message.text;
+        }).then(function(formattedText) {
+            data.text = formattedText;
+            return data;
+        });
+    }
 
     /**
      * Add contact handler.
@@ -371,7 +403,8 @@ angular.module('mm.addons.messages')
                     }
 
                     function updateUnreadConversationsCount(siteId) {
-                        return $mmaMessages.getUnreadConversationsCount().then(function(unread) {
+                        siteId = siteId || $mmSite.getId();
+                        return $mmaMessages.getUnreadConversationsCount(undefined, siteId).then(function(unread) {
                             // Leave badge enter if there is a 0+ or a 0.
                             $scope.badge = parseInt(unread, 10) > 0 ? unread : '';
                             // Update badge.
@@ -406,6 +439,11 @@ angular.module('mm.addons.messages')
                     siteid: siteId
                 });
             }
+
+            if ($mmApp.isDesktop() && $mmLocalNotifications.isAvailable()) {
+                $mmEmulatorHelper.checkNewNotifications(
+                        mmaMessagesPushSimulationComponent, fetchMessages, getTitleAndText, siteId);
+            }
         };
 
         /**
@@ -414,7 +452,7 @@ angular.module('mm.addons.messages')
          * @return {Number} Time between consecutive executions (in ms).
          */
         self.getInterval = function() {
-            return 600000; // 10 minutes.
+            return $mmApp.isDesktop() ? 60000 : 600000; // 1 or 10 minutes.
         };
 
         /**
@@ -423,8 +461,9 @@ angular.module('mm.addons.messages')
          * @return {Boolean} True if is a sync process, false otherwise.
          */
         self.isSync = function() {
-            // This is done to use only wifi if using the fallback function
-            return !$mmaMessages.isMessageCountEnabled();
+            // This is done to use only wifi if using the fallback function.
+            // In desktop it is always sync, since it fetches messages to see if there's a new one.
+            return !$mmaMessages.isMessageCountEnabled() || $mmApp.isDesktop();
         };
 
         /**
