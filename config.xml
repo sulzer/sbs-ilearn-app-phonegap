@@ -3,7 +3,7 @@
         xmlns:gap = "http://phonegap.com/ns/1.0"
         xmlns:android = "http://schemas.android.com/apk/res/android"
         id        = "edu.sbs.ilearnapp"
-        versionCode = "22"
+        versionCode = "42"
         version   = "3.4.2">
     <name>SBS iLearn</name>
 
@@ -20,7 +20,7 @@
     </gap:config-file>
 	
     <gap:config-file platform="ios" parent="CFBundleVersion">
-        <string>201804101752</string>
+        <string>201804101800</string>
     </gap:config-file>
 
     <gap:platform name="ios" />
