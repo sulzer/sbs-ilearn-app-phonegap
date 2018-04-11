@@ -137,34 +137,10 @@ angular.module('mm.addons.mod_assign')
      * @name $mmaModAssignHelper#getAnswersFromForm
      * @param  {Object} form Form (DOM element).
      * @return {Object}      Object with the answers.
+     * @deprecated since v3.4 Please use $mmUtil#getInfoValuesFromForm instead.
      */
     self.getAnswersFromForm = function(form) {
-        if (!form || !form.elements) {
-            return {};
-        }
-
-        var answers = {};
-
-        angular.forEach(form.elements, function(element) {
-            var name = element.name || '';
-            // Ignore flag and submit inputs.
-            if (!name || element.type == 'submit' || element.tagName == 'BUTTON') {
-                return;
-            }
-
-            // Get the value.
-            if (element.type == 'checkbox') {
-                answers[name] = !!element.checked;
-            } else if (element.type == 'radio') {
-                if (element.checked) {
-                    answers[name] = element.value;
-                }
-            } else {
-                answers[name] = element.value;
-            }
-        });
-
-        return answers;
+        return $mmUtil.getInfoValuesFromForm(form);
     };
 
     /**
@@ -271,34 +247,35 @@ angular.module('mm.addons.mod_assign')
     };
 
     /**
-     * Check if the feedback has draft data for a certain submission and assign.
+     * Check if the feedback data has changed for a certain submission and assign.
      *
      * @module mm.addons.mod_assign
      * @ngdoc method
-     * @name $mmaModAssignHelper#hasFeedbackDraftData
-     * @param  {Number} assignId        Assignment Id.
+     * @name $mmaModAssignHelper#hasFeedbackDataChanged
+     * @param  {Object} assign        Assignment.
      * @param  {Number} userId          User Id.
      * @param  {Object} feedback        Feedback data.
-     * @param  {String} [siteId]        Site ID. If not defined, current site.
      * @return {Promise}                Promise resolved with true if data has changed, resolved with false otherwise.
      */
-    self.hasFeedbackDraftData = function(assignId, userId, feedback, siteId) {
-        var hasDraft = false,
+    self.hasFeedbackDataChanged = function(assign, userId, feedback) {
+        var hasChanged = false,
             promises = [];
 
         angular.forEach(feedback.plugins, function(plugin) {
-            promises.push($mmaModAssignFeedbackDelegate.hasPluginDraftData(assignId, userId, plugin, siteId)
-                    .then(function(draft) {
-                if (draft) {
-                    hasDraft = true;
-                }
-            }).catch(function() {
-                // Ignore errors.
+            promises.push(self.prepareFeedbackPluginData(assign.id, userId, feedback).then(function(inputData) {
+                return $mmaModAssignFeedbackDelegate.hasPluginDataChanged(assign, userId, plugin, inputData)
+                        .then(function(changed) {
+                    if (changed) {
+                        hasChanged = true;
+                    }
+                }).catch(function() {
+                    // Ignore errors.
+                });
             }));
         });
 
         return $mmUtil.allPromises(promises).then(function() {
-            return hasDraft;
+            return hasChanged;
         });
     };
 

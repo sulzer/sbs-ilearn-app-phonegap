@@ -22,7 +22,7 @@ angular.module('mm.core.courses')
  * @name $mmCoursesHandlers
  */
 .factory('$mmCoursesHandlers', function($mmSite, $state, $mmCourses, $q, $mmUtil, $translate, $timeout, $mmCourse, $mmSitesManager,
-            mmCoursesEnrolInvalidKey, $mmContentLinkHandlerFactory) {
+            mmCoursesEnrolInvalidKey, $mmContentLinkHandlerFactory, $mmAddonManager) {
 
     var self = {};
 
@@ -91,17 +91,29 @@ angular.module('mm.core.courses')
     self.courseLinksHandler.getActions = function(siteIds, url, params, courseId) {
         courseId = parseInt(params.id, 10);
 
+        var sectionId = params.sectionid ? parseInt(params.sectionid, 10) : null,
+            sectionNumber = typeof params.section != 'undefined' ? parseInt(params.section, 10) : NaN,
+            stateParams = {
+                courseid: courseId,
+                sid: sectionId || null
+            };
+
+        if (!isNaN(sectionNumber)) {
+            stateParams.sectionnumber = sectionNumber;
+        }
+
         return [{
             action: function(siteId) {
                 siteId = siteId || $mmSite.getId();
                 if (siteId == $mmSite.getId()) {
-                    actionEnrol(courseId, url);
+                    actionEnrol(courseId, url, stateParams);
                 } else {
+
                     // Use redirect to make the course the new history root (to avoid "loops" in history).
                     $state.go('redirect', {
                         siteid: siteId,
                         state: 'site.mm_course',
-                        params: {courseid: courseId}
+                        params: stateParams
                     });
                 }
             }
@@ -111,11 +123,12 @@ angular.module('mm.core.courses')
     /**
      * Action to perform when an enrol link is clicked.
      *
-     * @param  {Number} courseId Course ID.
-     * @param  {String} url      Treated URL.
+     * @param  {Number} courseId    Course ID.
+     * @param  {String} url         Treated URL.
+     * @param  {Object} stateParams Params to send to the new state.
      * @return {Void}
      */
-    function actionEnrol(courseId, url) {
+    function actionEnrol(courseId, url, stateParams) {
         var modal = $mmUtil.showModalLoading(),
             isEnrolUrl = !!url.match(/(\/enrol\/index\.php)|(\/course\/enrol\.php)/);
 
@@ -164,7 +177,7 @@ angular.module('mm.core.courses')
             $state.go('redirect', {
                 siteid: $mmSite.getId(),
                 state: 'site.mm_course',
-                params: {courseid: courseId}
+                params: stateParams
             });
         });
     }
@@ -263,6 +276,66 @@ angular.module('mm.core.courses')
                 });
             }
         }];
+    };
+
+    /**
+     * Side menu nav handler.
+     *
+     * @module mm.addons.courses
+     * @ngdoc method
+     * @name $mmCoursesHandlers#sideMenuNav
+     */
+    self.sideMenuNav = function() {
+
+        var self = {};
+
+        /**
+         * Check if handler is enabled.
+         *
+         * @return {Promise|Boolean} If handler is enabled returns a resolved promise. If it's not it can return a
+         *                           rejected promise or false.
+         */
+        self.isEnabled = function() {
+            var myCoursesDisabled = $mmCourses.isMyCoursesDisabledInSite();
+
+            // Check if overview side menu is available, so it won't show My courses.
+            var $mmaMyOverview = $mmAddonManager.get('$mmaMyOverview');
+            if ($mmaMyOverview) {
+                return $mmaMyOverview.isSideMenuAvailable().then(function(enabled) {
+                    if (enabled) {
+                        return false;
+                    }
+                    // Addon not enabled, check my courses.
+                    return !myCoursesDisabled;
+                });
+            }
+            // Addon not present, check my courses.
+            return !myCoursesDisabled;
+        };
+
+        /**
+         * Get the controller.
+         *
+         * @return {Object} Controller.
+         */
+        self.getController = function() {
+
+            /**
+             * Side menu nav handler controller.
+             *
+             * @module mm.addons.courses
+             * @ngdoc controller
+             * @name $mmCoursesHandlers#sideMenuNav:controller
+             */
+            return function($scope) {
+                $scope.icon = 'ion-ionic';
+                $scope.title = 'mm.courses.mycourses';
+                $scope.state = 'site.mm_courses';
+                $scope.class = 'mm-mycourses-handler';
+            };
+        };
+
+        return self;
     };
 
     return self;

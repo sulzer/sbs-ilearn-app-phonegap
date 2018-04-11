@@ -22,8 +22,8 @@ angular.module('mm.core.contentlinks')
  * @name $mmContentLinksHelper
  */
 .factory('$mmContentLinksHelper', function($log, $ionicHistory, $state, $mmSite, $mmContentLinksDelegate, $mmUtil, $translate,
-            $mmCourseHelper, $mmSitesManager, $q, $mmLoginHelper, $mmText, mmCoreConfigConstants, $mmCourse,
-            $mmContentLinkHandlerFactory) {
+            $mmCourseHelper, $mmSitesManager, $q, $mmLoginHelper, $mmText, mmCoreConfigConstants, $mmCourse, $mmApp,
+            $mmContentLinkHandlerFactory, $mmAddonManager, mmCoreNoSiteId) {
 
     $log = $log.getInstance('$mmContentLinksHelper');
 
@@ -34,7 +34,7 @@ angular.module('mm.core.contentlinks')
      *
      * @module mm.core.contentlinks
      * @ngdoc method
-     * @name $mmContentLinksHelper#createModuleIndexLinkHandler
+     * @name $mmContentLinksHelper#createModuleGradeLinkHandler
      * @param  {String} addon          Name of the addon as it's registered in $mmCourseDelegateProvider.
      * @param  {String} modName        Name of the module (assign, book, ...)
      * @param  {Object} service        Module's service. Should implement a 'isPluginEnabled(siteId)' function.
@@ -176,10 +176,12 @@ angular.module('mm.core.contentlinks')
      * @return {True}       True if the URL should be handled by this component, false otherwise.
      */
     self.handleCustomUrl = function(url) {
-        var contentLinksScheme = mmCoreConfigConstants.customurlscheme + '://link=';
+        var contentLinksScheme = mmCoreConfigConstants.customurlscheme + '://link';
         if (url.indexOf(contentLinksScheme) == -1) {
             return false;
         }
+
+        url = decodeURIComponent(url);
 
         // App opened using custom URL scheme.
         $log.debug('Treating custom URL scheme: ' + url);
@@ -188,7 +190,7 @@ angular.module('mm.core.contentlinks')
             username;
 
         // Delete the scheme from the URL.
-        url = url.replace(contentLinksScheme, '');
+        url = url.replace(contentLinksScheme + '=', '');
 
         // Detect if there's a user specified.
         username = $mmText.getUsernameFromUrl(url);
@@ -196,8 +198,11 @@ angular.module('mm.core.contentlinks')
             url = url.replace(username + '@', ''); // Remove the username from the URL.
         }
 
-        // Check if the site is stored.
-        $mmSitesManager.getSiteIdsFromUrl(url, false, username).then(function(siteIds) {
+        // Wait for the app to be ready.
+        $mmApp.ready().then(function() {
+            // Check if the site is stored.
+            return $mmSitesManager.getSiteIdsFromUrl(url, false, username);
+        }).then(function(siteIds) {
             if (siteIds.length) {
                 modal.dismiss(); // Dismiss modal so it doesn't collide with confirms.
                 return self.handleLink(url, username).then(function(treated) {
@@ -217,7 +222,13 @@ angular.module('mm.core.contentlinks')
                 return $mmSitesManager.checkSite(siteUrl).then(function(result) {
                     // Site exists. We'll allow to add it.
                     var promise,
-                        ssoNeeded = $mmLoginHelper.isSSOLoginNeeded(result.code);
+                        ssoNeeded = $mmLoginHelper.isSSOLoginNeeded(result.code),
+                        hasRemoteAddonsLoaded = false,
+                        stateParams = {
+                            siteurl: result.siteurl,
+                            username: username,
+                            urltoopen: url
+                        };
 
                     modal.dismiss(); // Dismiss modal so it doesn't collide with confirms.
 
@@ -228,6 +239,12 @@ angular.module('mm.core.contentlinks')
                         // Ask the user before changing site.
                         promise = $mmUtil.showConfirm($translate('mm.contentlinks.confirmurlothersite')).then(function() {
                             if (!ssoNeeded) {
+                                hasRemoteAddonsLoaded = $mmAddonManager.hasRemoteAddonsLoaded();
+                                if (hasRemoteAddonsLoaded) {
+                                    // Store the redirect since logout will restart the app.
+                                    $mmApp.storeRedirect(mmCoreNoSiteId, 'mm_login.credentials', stateParams);
+                                }
+
                                 return $mmSitesManager.logout().catch(function() {
                                     // Ignore errors (shouldn't happen).
                                 });
@@ -239,12 +256,8 @@ angular.module('mm.core.contentlinks')
                         if (ssoNeeded) {
                             $mmLoginHelper.confirmAndOpenBrowserForSSOLogin(
                                         result.siteurl, result.code, result.service, result.config && result.config.launchurl);
-                        } else {
-                            $state.go('mm_login.credentials', {
-                                siteurl: result.siteurl,
-                                username: username,
-                                urltoopen: url
-                            });
+                        } else if (!hasRemoteAddonsLoaded) {
+                            $state.go('mm_login.credentials', stateParams);
                         }
                     });
 

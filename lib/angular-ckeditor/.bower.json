@@ -35,6 +35,6 @@
     "commit": "da851c1bf67bb3e3190682dfab7c5a8fd49abecf"
   },
   "_source": "https://github.com/lemonde/angular-ckeditor.git",
-  "_target": "=1.0.3",
+  "_target": "1.0.3",
   "_originalSource": "angular-ckeditor"
 }

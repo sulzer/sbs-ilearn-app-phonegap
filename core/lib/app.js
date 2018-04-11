@@ -53,10 +53,13 @@ angular.module('mm.core')
      */
     this.registerStore = function(store) {
         if (typeof(store.name) === 'undefined') {
-            console.log('$mmApp: Error: store name is undefined.');
+            console.error('$mmApp: Error: store name is undefined.');
+            return;
+        } else if (typeof store.keyPath  === 'undefined' || !store.keyPath) {
+            console.error('$mmApp: Error: store ' + store.name + ' keyPath is invalid.');
             return;
         } else if (storeExists(store.name)) {
-            console.log('$mmApp: Error: store ' + store.name + ' is already defined.');
+            console.error('$mmApp: Error: store ' + store.name + ' is already defined.');
             return;
         }
         dbschema.stores.push(store);
@@ -99,6 +102,30 @@ angular.module('mm.core')
         var db,
             self = {},
             ssoAuthenticationDeferred;
+
+        /**
+         * Check if the browser supports mediaDevices.getUserMedia.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmApp#canGetUserMedia
+         * @return {Boolean} Whether the function is supported.
+         */
+        self.canGetUserMedia = function() {
+            return !!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        };
+
+        /**
+         * Check if the browser supports MediaRecorder.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmApp#canRecordMedia
+         * @return {Boolean} Whether the function is supported.
+         */
+        self.canRecordMedia = function() {
+            return !!window.MediaRecorder;
+        };
 
         /**
          * Create a new state in the UI-router.
@@ -181,6 +208,18 @@ angular.module('mm.core')
          */
         self.initProcess = function() {
             return $ionicPlatform.ready();
+        };
+
+        /**
+         * Checks if the app is running in a desktop environment (not browser).
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmApp#isDesktop
+         * @return {Bool} Whether the app is running in a desktop environment (not browser).
+         */
+        self.isDesktop = function() {
+            return !!(window.process && window.process.versions && typeof window.process.versions.electron != 'undefined');
         };
 
         /**

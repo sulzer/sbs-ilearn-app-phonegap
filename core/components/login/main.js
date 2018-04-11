@@ -15,6 +15,8 @@
 angular.module('mm.core.login', [])
 
 .constant('mmCoreLoginTokenChangePassword', '*changepassword*') // Deprecated.
+.constant('mmCoreLoginSiteCheckedEvent', 'mm_login_site_checked')
+.constant('mmCoreLoginSiteUncheckedEvent', 'mm_login_site_unchecked')
 
 .config(function($stateProvider, $urlRouterProvider, $mmInitDelegateProvider, mmInitDelegateMaxAddonPriority) {
 
@@ -28,6 +30,12 @@ angular.module('mm.core.login', [])
         onEnter: function($ionicHistory) {
             // Ensure that there is no history stack when getting here.
             $ionicHistory.clearHistory();
+        },
+        controller: function($scope) {
+            // Required for Electron app so the title doesn't change.
+            $scope.$on('$ionicView.afterEnter', function(ev) {
+                ev.stopPropagation();
+            });
         }
     })
 
@@ -85,7 +93,8 @@ angular.module('mm.core.login', [])
             infositeurl: '',
             siteid: '',
             statename: null, // Name and params of the state to go once authenticated. If not defined, site initial page.
-            stateparams: null
+            stateparams: null,
+            siteconfig: null
         }
     })
 
@@ -106,6 +115,16 @@ angular.module('mm.core.login', [])
         cache: false,
         params: {
             siteid: ''
+        }
+    })
+
+    .state('mm_login.forgottenpassword', {
+        url: '/forgottenpassword',
+        templateUrl: 'core/components/login/templates/forgottenpassword.html',
+        controller: 'mmLoginForgottenPasswordCtrl',
+        params: {
+            siteurl: '',
+            username: ''
         }
     });
 
@@ -301,7 +320,8 @@ angular.module('mm.core.login', [])
                         infositeurl: info.siteurl,
                         siteid: siteId,
                         statename: data.statename,
-                        stateparams: data.stateparams
+                        stateparams: data.stateparams,
+                        siteconfig: result.config
                     });
                 }
             }
@@ -353,16 +373,22 @@ angular.module('mm.core.login', [])
             // Authentication ongoing, probably duplicated request.
             return true;
         }
+        if ($mmApp.isDesktop()) {
+            // In desktop, make sure InAppBrowser is closed.
+            $mmUtil.closeInAppBrowser(true);
+        }
 
         // App opened using custom URL scheme. Probably an SSO authentication.
         $mmApp.startSSOAuthentication();
         $log.debug('App launched by URL');
 
-        var modal = $mmUtil.showModalLoading('mm.login.authenticating', true),
-            siteData;
-
         // Delete the sso scheme from the URL.
         url = url.replace(ssoScheme, '');
+
+        // Some platforms like Windows add a slash at the end. Remove it.
+        // Some sites add a # at the end of the URL. If it's there, remove it.
+        url = url.replace(/\/?#?\/?$/, '');
+
         // Decode from base64.
         try {
             url = atob(url);
@@ -371,6 +397,9 @@ angular.module('mm.core.login', [])
             $log.error('Error decoding parameter received for login SSO');
             return false;
         }
+
+        var modal = $mmUtil.showModalLoading('mm.login.authenticating', true),
+            siteData;
 
         // Wait for app to be ready.
         $mmApp.ready().then(function() {

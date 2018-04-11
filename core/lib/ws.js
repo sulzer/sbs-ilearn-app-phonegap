@@ -324,7 +324,11 @@ angular.module('mm.core')
      * @return {Promise}                The success returns the fileEntry, the reject will contain the error object.
      */
     self.downloadFile = function(url, path, addExtension) {
-        $log.debug('Downloading file ' + url, path, addExtension);
+        $log.debug('Downloading file', url, path, addExtension);
+
+        if (!$mmApp.isOnline()) {
+            return $mmLang.translateAndReject('mm.core.networkerrormsg');
+        }
 
         // Use a tmp path to download the file and then move it to final location.This is because if the download fails,
         // the local file is deleted.
@@ -338,17 +342,24 @@ angular.module('mm.core')
                 if (addExtension) {
                     ext = $mmFS.getFileExtension(path);
 
-                    if (!ext) {
+                    // Google Drive extensions will be considered invalid since Moodle usually converts them.
+                    if (!ext || ext == 'gdoc' || ext == 'gsheet' || ext == 'gslides' || ext == 'gdraw') {
                         promise = self.getRemoteFileMimeType(url).then(function(mime) {
-                            var ext;
+                            var remoteExt;
                             if (mime) {
-                                ext = $mmFS.getExtension(mime, url);
-                                if (ext) {
-                                    path += '.' + ext;
+                                remoteExt = $mmFS.getExtension(mime, url);
+                                // If the file is from Google Drive, ignore mimetype application/json (sometimes pluginfile
+                                // returns an invalid mimetype for files).
+                                if (remoteExt && (!ext || mime != 'application/json')) {
+                                    if (ext) {
+                                        // Remove existing extension since we will use another one.
+                                        path = $mmFS.removeExtension(path);
+                                    }
+                                    path += '.' + remoteExt;
+                                    return remoteExt;
                                 }
-                                return ext;
                             }
-                            return false;
+                            return ext;
                         });
                     } else {
                         promise = $q.when(ext);
@@ -390,6 +401,10 @@ angular.module('mm.core')
 
         if (!uri || !options || !preSets) {
             return $q.reject();
+        }
+
+        if (!$mmApp.isOnline()) {
+            return $mmLang.translateAndReject('mm.core.networkerrormsg');
         }
 
         var ftOptions = {},

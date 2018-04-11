@@ -69,7 +69,7 @@ angular.module('mm.core')
     this.$get = function($ionicLoading, $ionicPopup, $injector, $translate, $http, $log, $q, $mmLang, $mmFS, $timeout, $mmApp,
                 $mmText, mmCoreWifiDownloadThreshold, mmCoreDownloadThreshold, $ionicScrollDelegate, $mmWS, $cordovaInAppBrowser,
                 $mmConfig, mmCoreSettingsRichTextEditor, $rootScope, $ionicPlatform, $ionicHistory, mmCoreSplitViewBlock, $state,
-                $window, $cordovaClipboard) {
+                $window, $cordovaClipboard, mmCoreDontShowError) {
 
         $log = $log.getInstance('$mmUtil');
 
@@ -200,6 +200,19 @@ angular.module('mm.core')
         };
 
         /**
+         * Returns if a URL has any protocol, if not is a relative URL.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#isAbsoluteURL
+         * @param {String} url The url to test against the pattern
+         * @return {Boolean}   TRUE if the url is absolute. FALSE if it is relative.
+         */
+        self.isAbsoluteURL = function(url) {
+            return /^[^:]{2,}:\/\//i.test(url) || /^(tel:|mailto:|geo:)/.test(url);
+        };
+
+        /**
          * Returns if a URL is a theme image URL.
          *
          * @module mm.core
@@ -265,7 +278,8 @@ angular.module('mm.core')
             } else {
                 url += '?';
             }
-            url += 'token=' + token;
+            // Always send offline=1 (for external repositories). It shouldn't cause problems for local files or old Moodles.
+            url += 'token=' + token + '&offline=1';
 
             // Some webservices returns directly the correct download url, others not.
             if (url.indexOf('/webservice/pluginfile') == -1) {
@@ -291,7 +305,16 @@ angular.module('mm.core')
         self.openFile = function(path) {
             var deferred = $q.defer();
 
-            if (window.plugins) {
+            if ($mmApp.isDesktop()) {
+                // It's a desktop app, send an event so the file is opened. It has to be done with an event
+                // because opening the file from here (renderer process) doesn't focus the opened app.
+                // Use sendSync so we can receive the result.
+                if (require('electron').ipcRenderer.sendSync('openItem', path)) {
+                    deferred.resolve();
+                } else {
+                    $mmLang.translateAndRejectDeferred(deferred, 'mm.core.erroropenfilenoapp');
+                }
+            } else if (window.plugins) {
                 var extension = $mmFS.getFileExtension(path),
                     mimetype = $mmFS.getMimeType(extension);
 
@@ -377,7 +400,16 @@ angular.module('mm.core')
          * @return {Void}
          */
         self.openInBrowser = function(url) {
-            window.open(url, '_system');
+            if ($mmApp.isDesktop()) {
+                // It's a desktop app, use Electron shell library to open the browser.
+                var shell = require('electron').shell;
+                if (!shell.openExternal(url)) {
+                    // Open browser failed, open a new window in the app.
+                    window.open(url, '_system');
+                }
+            } else {
+                window.open(url, '_system');
+            }
         };
 
         /**
@@ -418,10 +450,17 @@ angular.module('mm.core')
          * @module mm.core
          * @ngdoc method
          * @name $mmUtil#closeInAppBrowser
+         * @param  {Boolean} [closeAll] Desktop only. True to close all secondary windows, false to close only the "current" one.
          * @return {Void}
          */
-        self.closeInAppBrowser = function() {
-            $cordovaInAppBrowser.close();
+        self.closeInAppBrowser = function(closeAll) {
+            // Use try/catch because it will fail if there is no opened InAppBrowser.
+            try {
+                $cordovaInAppBrowser.close();
+                if (closeAll && $mmApp.isDesktop()) {
+                    require('electron').ipcRenderer.send('closeSecondaryWindows');
+                }
+            } catch(ex) {}
         };
 
         /**
@@ -445,14 +484,15 @@ angular.module('mm.core')
 
             if (ionic.Platform.isAndroid() && window.plugins && window.plugins.webintent) {
                 // In Android we need the mimetype to open it.
-                var extension,
-                    iParams;
+                var iParams;
 
-                $mmWS.getRemoteFileMimeType(url).then(function(mimetype) {
+                self.getMimeTypeFromUrl(url).catch(function() {
+                    // Error getting mimetype, return undefined.
+                }).then(function(mimetype) {
                     if (!mimetype) {
-                        // Couldn't retireve mimetype. Try to guess it.
-                        extension = $mmFS.guessExtensionFromUrl(url);
-                        mimetype = $mmFS.getMimeType(extension);
+                        // Couldn't retrieve mimetype. Return error.
+                        $mmLang.translateAndRejectDeferred(deferred, 'mm.core.erroropenfilenoextension');
+                        return;
                     }
 
                     iParams = {
@@ -473,12 +513,7 @@ angular.module('mm.core')
                             $log.debug('url: ' + iParams.url);
                             $log.debug('type: ' + iParams.type);
 
-                            if (!extension || extension.indexOf('/') > -1 || extension.indexOf('\\') > -1) {
-                                // Extension not found.
-                                $mmLang.translateAndRejectDeferred(deferred, 'mm.core.erroropenfilenoextension');
-                            } else {
-                                $mmLang.translateAndRejectDeferred(deferred, 'mm.core.erroropenfilenoapp');
-                            }
+                            $mmLang.translateAndRejectDeferred(deferred, 'mm.core.erroropenfilenoapp');
                         }
                     );
                 });
@@ -492,22 +527,42 @@ angular.module('mm.core')
         };
 
         /**
-         * Get the mimetype of a file given its URL. It'll perform a HEAD request to get it, if that
-         * fails it'll try to guess it using the URL.
+         * Get the mimetype of a file given its URL. It'll try to guess it using the URL, if that fails then it'll
+         * perform a HEAD request to get it. It's done in this order because pluginfile.php can return wrong mimetypes.
          *
          * @module mm.core
          * @ngdoc method
          * @name $mmUtil#getMimeType
          * @param  {String} url The URL of the file.
          * @return {Promise}    Promise resolved with the mimetype.
+         * @deprecated since 3.3. Use $mmUtil#getMimeTypeFromUrl.
          */
         self.getMimeType = function(url) {
+            $log.warn('$mmUtil#getMimeType is deprecated. Use $mmUtil#getMimeTypeFromUrl instead');
+            return self.getMimeTypeFromUrl(url);
+        };
+
+        /**
+         * Get the mimetype of a file given its URL. It'll try to guess it using the URL, if that fails then it'll
+         * perform a HEAD request to get it. It's done in this order because pluginfile.php can return wrong mimetypes.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#getMimeTypeFromUrl
+         * @param  {String} url The URL of the file.
+         * @return {Promise}    Promise resolved with the mimetype.
+         */
+        self.getMimeTypeFromUrl = function(url) {
+            // First check if it can be guessed from the URL.
+            var extension = $mmFS.guessExtensionFromUrl(url),
+                mimetype = $mmFS.getMimeType(extension);
+
+            if (mimetype) {
+                return $q.when(mimetype);
+            }
+
+            // Can't be guessed, get the remote mimetype.
             return $mmWS.getRemoteFileMimeType(url).then(function(mimetype) {
-                if (!mimetype) {
-                    // Couldn't retireve mimetype. Try to guess it.
-                    extension = $mmFS.guessExtensionFromUrl(url);
-                    mimetype = $mmFS.getMimeType(extension);
-                }
                 return mimetype || '';
             });
         };
@@ -700,7 +755,8 @@ angular.module('mm.core')
         };
 
         function getErrorTitle(message) {
-            if (message == $translate.instant('mm.core.networkerrormsg')) {
+            if (message == $translate.instant('mm.core.networkerrormsg') ||
+                    message == $translate.instant('mm.fileuploader.errormustbeonlinetoupload')) {
                 return '<span class="mm-icon-with-badge"><i class="icon ion-wifi"></i>\
                     <i class="icon ion-alert-circled mm-icon-badge"></i></span>';
             }
@@ -720,8 +776,10 @@ angular.module('mm.core')
          *                                    If not defined, modal won't be automatically closed.
          */
         self.showErrorModalDefault = function(errorMessage, defaultError, needsTranslate, autocloseTime) {
-            errorMessage = typeof errorMessage == 'string' ? errorMessage : defaultError;
-            return self.showErrorModal(errorMessage, needsTranslate, autocloseTime);
+            if (errorMessage != mmCoreDontShowError) {
+                errorMessage = typeof errorMessage == 'string' ? errorMessage : defaultError;
+                return self.showErrorModal(errorMessage, needsTranslate, autocloseTime);
+            }
         };
 
         /**
@@ -961,70 +1019,79 @@ angular.module('mm.core')
          * @ngdoc method
          * @name $mmUtil#formatTime
          * @param  {Integer} seconds A number of seconds
-         * @return {String}         Human readable seconds formatted
+         * @return {Promise}         Promise resolved with human readable seconds formatted
+         * @deprecated since 3.3. Please use $mmUtil#formatTimeInstant instead.
          */
         self.formatTime = function(seconds) {
-            var langKeys = ['mm.core.day', 'mm.core.days', 'mm.core.hour', 'mm.core.hours', 'mm.core.min', 'mm.core.mins',
-                            'mm.core.sec', 'mm.core.secs', 'mm.core.year', 'mm.core.years', 'mm.core.now'];
+            return $q.when(self.formatTimeInstant(seconds));
+        };
 
-            return $translate(langKeys).then(function(translations) {
+        /**
+         * Returns hours, minutes and seconds in a human readable format.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#formatTimeInstant
+         * @param  {Integer} seconds A number of seconds
+         * @return {String}          Human readable seconds formatted
+         * @since 3.3
+         */
+        self.formatTimeInstant = function(seconds) {
+            var totalSecs = Math.abs(seconds);
+            var years     = Math.floor(totalSecs / mmCoreSecondsYear);
+            var remainder = totalSecs - (years * mmCoreSecondsYear);
+            var days      = Math.floor(remainder / mmCoreSecondsDay);
+            remainder = totalSecs - (days * mmCoreSecondsDay);
+            var hours     = Math.floor(remainder / mmCoreSecondsHour);
+            remainder = remainder - (hours * mmCoreSecondsHour);
+            var mins      = Math.floor(remainder / mmCoreSecondsMinute);
+            var secs      = remainder - (mins * mmCoreSecondsMinute);
 
-                totalSecs = Math.abs(seconds);
+            var ss = $translate.instant('mm.core.' + (secs == 1 ? 'sec' : 'secs'));
+            var sm = $translate.instant('mm.core.' + (mins == 1 ? 'min' : 'mins'));
+            var sh = $translate.instant('mm.core.' + (hours == 1 ? 'hour' : 'hours'));
+            var sd = $translate.instant('mm.core.' + (days == 1 ? 'day' : 'days'));
+            var sy = $translate.instant('mm.core.' + (years == 1 ? 'year' : 'years'));
 
-                var years     = Math.floor(totalSecs / mmCoreSecondsYear);
-                var remainder = totalSecs - (years * mmCoreSecondsYear);
-                var days      = Math.floor(remainder / mmCoreSecondsDay);
-                remainder = totalSecs - (days * mmCoreSecondsDay);
-                var hours     = Math.floor(remainder / mmCoreSecondsHour);
-                remainder = remainder - (hours * mmCoreSecondsHour);
-                var mins      = Math.floor(remainder / mmCoreSecondsMinute);
-                var secs      = remainder - (mins * mmCoreSecondsMinute);
+            var oyears = '',
+                odays = '',
+                ohours = '',
+                omins = '',
+                osecs = '';
 
-                var ss = (secs == 1)  ? translations['mm.core.sec']  : translations['mm.core.secs'];
-                var sm = (mins == 1)  ? translations['mm.core.min']  : translations['mm.core.mins'];
-                var sh = (hours == 1) ? translations['mm.core.hour'] : translations['mm.core.hours'];
-                var sd = (days == 1)  ? translations['mm.core.day']  : translations['mm.core.days'];
-                var sy = (years == 1) ? translations['mm.core.year'] : translations['mm.core.years'];
+            if (years) {
+                oyears  = years + ' ' + sy;
+            }
+            if (days) {
+                odays  = days + ' ' + sd;
+            }
+            if (hours) {
+                ohours = hours + ' ' + sh;
+            }
+            if (mins) {
+                omins  = mins + ' ' + sm;
+            }
+            if (secs) {
+                osecs  = secs + ' ' + ss;
+            }
 
-                var oyears = '',
-                    odays = '',
-                    ohours = '',
-                    omins = '',
-                    osecs = '';
+            if (years) {
+                return oyears + ' ' + odays;
+            }
+            if (days) {
+                return odays + ' ' + ohours;
+            }
+            if (hours) {
+                return ohours + ' ' + omins;
+            }
+            if (mins) {
+                return omins + ' ' + osecs;
+            }
+            if (secs) {
+                return osecs;
+            }
 
-                if (years) {
-                    oyears  = years + ' ' + sy;
-                }
-                if (days) {
-                    odays  = days + ' ' + sd;
-                }
-                if (hours) {
-                    ohours = hours + ' ' + sh;
-                }
-                if (mins) {
-                    omins  = mins + ' ' + sm;
-                }
-                if (secs) {
-                    osecs  = secs + ' ' + ss;
-                }
-
-                if (years) {
-                    return oyears + ' ' + odays;
-                }
-                if (days) {
-                    return odays + ' ' + ohours;
-                }
-                if (hours) {
-                    return ohours + ' ' + omins;
-                }
-                if (mins) {
-                    return omins + ' ' + osecs;
-                }
-                if (secs) {
-                    return osecs;
-                }
-                return translations['mm.core.now'];
-            });
+            return $translate.instant('mm.core.now');
         };
 
         /**
@@ -1179,26 +1246,75 @@ angular.module('mm.core')
 
             var count = 0,
                 failed = false,
+                error,
                 deferred = $q.defer();
 
             angular.forEach(promises, function(promise) {
-                promise.catch(function() {
+                promise.catch(function(err) {
                     failed = true;
+                    error = err;
                 }).finally(function() {
                     count++;
 
                     if (count === promises.length) {
                         // All promises have finished, reject/resolve.
                         if (failed) {
-                            deferred.reject();
+                            deferred.reject(error);
                         } else {
-                            deferred.resolve();
+                            // All the promises have been resolved, $q.all should finish immediately and send back the result
+                            // of all the promises.
+                            deferred.resolve($q.all(promises));
                         }
                     }
                 });
             });
 
             return deferred.promise;
+        };
+
+        /**
+         * Execute promises one depending on the previous.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#executeOrderedPromises
+         * @param  {Object[]} orderedPromisesData       Data to be executed including the following values:
+         *                                               - func: Function to be executed.
+         *                                               - params: Array of data to be sent to the function.
+         *                                               - blocking: Boolean. If promise should block the following.
+         * @return {Promise}                        Promise resolved when all generated promises are resolved.
+         */
+        self.executeOrderedPromises = function(orderedPromisesData) {
+            var promises = [],
+                dependency = $q.when();
+
+            // Execute all the processes in order.
+            angular.forEach(orderedPromisesData, function(data) {
+                var promise;
+
+                // Add the process to the dependency stack.
+                promise = dependency.finally(function() {
+                    var prom, fn;
+
+                    try {
+                        fn = self.resolveObject(data.func);
+                        prom = fn.apply(prom, data.params || []);
+                    } catch (e) {
+                        $log.error(e.message);
+                        return;
+                    }
+                    return prom;
+                });
+                promises.push(promise);
+
+                // If the new process is blocking, we set it as the dependency.
+                if (data.blocking) {
+                    dependency = promise;
+                }
+            });
+
+            // Return when all promises are done.
+            return self.allPromises(promises);
         };
 
         /**
@@ -1264,6 +1380,11 @@ angular.module('mm.core')
 
                 var equal = true;
                 angular.forEach(itemA, function(value, name) {
+                    if (name == '$$hashKey') {
+                        // Ignore $$hashKey property since it's a "calculated" property.
+                        return;
+                    }
+
                     if (!self.basicLeftCompare(value, itemB[name], maxLevels, level + 1)) {
                         equal = false;
                     }
@@ -1299,9 +1420,10 @@ angular.module('mm.core')
          *                                      Default: 'mm.course.confirmdownloadunknownsize'.
          * @param {Number} [wifiThreshold]      Threshold to show confirm in WiFi connection. Default: mmCoreWifiDownloadThreshold.
          * @param {Number} [limitedThreshold]   Threshold to show confirm in limited connection. Default: mmCoreDownloadThreshold.
+         * @param  {Boolean} [alwaysConfirm]    True to show a confirm even if the size isn't high, false otherwise.
          * @return {Promise}                   Promise resolved when the user confirms or if no confirm needed.
          */
-        self.confirmDownloadSize = function(sizeCalc, message, unknownsizemessage, wifiThreshold, limitedThreshold) {
+        self.confirmDownloadSize = function(sizeCalc, message, unknownsizemessage, wifiThreshold, limitedThreshold, alwaysConfirm) {
             wifiThreshold = typeof wifiThreshold == 'undefined' ? mmCoreWifiDownloadThreshold : wifiThreshold;
             limitedThreshold = typeof limitedThreshold == 'undefined' ? mmCoreDownloadThreshold : limitedThreshold;
 
@@ -1322,6 +1444,8 @@ angular.module('mm.core')
                 message = message || 'mm.course.confirmdownload';
                 var readableSize = $mmText.bytesToSize(sizeCalc.size, 2);
                 return self.showConfirm($translate(message, {size: readableSize}));
+            } else if (alwaysConfirm) {
+                return self.showConfirm($translate('mm.core.areyousure'));
             }
             return $q.when();
         };
@@ -1494,6 +1618,20 @@ angular.module('mm.core')
                 params[key] = value !== undefined ? value : '';
             });
             return params;
+        };
+
+        /**
+         * Remove the parameters from a URL, returning the URL without them.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#removeUrlParams
+         * @param  {String} url URL to treat.
+         * @return {String}     URL without params.
+         */
+        self.removeUrlParams = function(url) {
+            var matches = url.match(/^[^\?]+/);
+            return matches && matches[0];
         };
 
         /**
@@ -1866,6 +2004,40 @@ angular.module('mm.core')
         };
 
         /**
+         * Given a list (eg a,b,c,d,e) this function returns an array of 1->a, 2->b, 3->c etc.
+         *
+         * Taken from make_menu_from_list on moodlelib.php (not the same but similar).
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#makeMenuFromList
+         * @param  {String} list            The string to explode into array bits
+         * @param  {String} [defaultLabel]  Element that will become default option, if not defined, it won't be added.
+         * @param  {String} [separator]     The separator used within the list string. Default ','.
+         * @param  {Mixed}  [defaultValue]  Element that will become default option value. Default 0.
+         * @return {Arrray}                 The now assembled array
+         */
+        self.makeMenuFromList = function(list, defaultLabel, separator, defaultValue) {
+            separator = separator || ',';
+            list = list.split(separator);
+
+            list = list.map(function (label, index) {
+                return {
+                    label: label.trim(),
+                    value: index + 1
+                };
+            });
+
+            if (defaultLabel) {
+                list.unshift({
+                    label: defaultLabel,
+                    value: defaultValue || 0
+                });
+            }
+            return list;
+        };
+
+        /**
          * Converts an object into an array of objects, where each entry is an object containing
          * the key and value of the original object.
          * For example, it can convert {size: 2} into [{name: 'size', value: 2}].
@@ -1880,18 +2052,35 @@ angular.module('mm.core')
          * @return {Object[]}         Array of objects with the name & value of each property.
          */
         self.objectToArrayOfObjects = function(obj, keyName, valueName, sort) {
-            var keys = Object.keys(obj);
-
+            var entries = getEntries('', obj);
             if (sort) {
-                keys = keys.sort();
+                return entries.sort(function(a, b) {
+                    return a.name >= b.name ? 1 : -1;
+                });
             }
+            return entries;
 
-            return keys.map(function(key) {
-                var entry = {};
-                entry[keyName] = key;
-                entry[valueName] = obj[key];
-                return entry;
-            });
+            // Get the entries from an object or primitive value.
+            function getEntries(elKey, value) {
+                if (typeof value == 'object') {
+                    // It's an object, return at least an entry for each property.
+                    var keys = Object.keys(value),
+                        entries = [];
+
+                    angular.forEach(keys, function(key) {
+                        var newElKey = elKey ? elKey + '[' + key + ']' : key;
+                        entries = entries.concat(getEntries(newElKey, value[key]));
+                    });
+
+                    return entries;
+                } else {
+                    // Not an object, return a single entry.
+                    var entry = {};
+                    entry[keyName] = elKey;
+                    entry[valueName] = value;
+                    return entry;
+                }
+            }
         };
 
         /**
@@ -1907,6 +2096,30 @@ angular.module('mm.core')
             return Object.keys(obj).map(function(key) {
                 return obj[key];
             });
+        };
+
+        /**
+         * Converts an array of objects into an object with key and value.
+         * The contrary of objectToArrayOfObjects
+         * For example, it can convert [{name: 'size', value: 2}] into {size: 2}.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#objectToKeyValueMap
+         * @param  {Object} obj         Object to convert.
+         * @param  {String} keyName     Name of the properties where the keys are stored.
+         * @param  {String} valueName   Name of the properties where the keys are stored.
+         * @param  {String} [keyPrefix] Key prefix if needed to delete it.
+         * @return {Object[]}         Array of objects mapped.
+         */
+        self.objectToKeyValueMap = function(obj, keyName, valueName, keyPrefix) {
+            var prefixSubstr = keyPrefix ? keyPrefix.length : 0,
+                mapped = {};
+            angular.forEach(obj, function(item) {
+                var key = prefixSubstr > 0 ? item[keyName].substr(prefixSubstr) : item[keyName];
+                mapped[key] = item[valueName];
+            });
+            return mapped;
         };
 
 
@@ -1944,10 +2157,11 @@ angular.module('mm.core')
          * @name $mmUtil#mergeArraysWithoutDuplicates
          * @param  {Array} array1 The first array.
          * @param  {Array} array2 The second array.
+         * @param  {String} [key] Key of the property that must be unique. If not specified, the whole entry.
          * @return {Array}        Merged array.
          */
-        self.mergeArraysWithoutDuplicates = function(array1, array2) {
-            return self.uniqueArray(array1.concat(array2));
+        self.mergeArraysWithoutDuplicates = function(array1, array2, key) {
+            return self.uniqueArray(array1.concat(array2), key);
         };
 
         /**
@@ -1956,19 +2170,25 @@ angular.module('mm.core')
          * @module mm.core
          * @ngdoc method
          * @name $mmUtil#uniqueArray
-         * @param  {Array} array The array to treat.
-         * @return {Array}       Array without duplicate values.
+         * @param  {Array} array  The array to treat.
+         * @param  {String} [key] Key of the property that must be unique. If not specified, the whole entry.
+         * @return {Array}        Array without duplicate values.
          */
-        self.uniqueArray = function(array) {
-            var unique = [],
+        self.uniqueArray = function(array, key) {
+            var filtered = [],
+                unique = [],
                 len = array.length;
+
             for (var i = 0; i < len; i++) {
-                var value = array[i];
+                var entry = array[i],
+                    value = key ? entry[key] : entry;
                 if (unique.indexOf(value) == -1) {
                     unique.push(value);
+                    filtered.push(entry);
                 }
             }
-            return unique;
+
+            return filtered;
         };
 
         /**
@@ -2392,6 +2612,129 @@ angular.module('mm.core')
                 }
             }
             return measure;
+        };
+
+        /**
+         * Gets the index of the first string that matches a regular expression.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#indexOfRegexp
+         * @param  {String[]} array Array to search.
+         * @param  {RegExp} regex   RegExp to apply to each string.
+         * @return {Number}         Index of the first string that matches the RegExp. -1 if not found.
+         */
+        self.indexOfRegexp = function(array, regex) {
+            if (!array || !array.length) {
+                return -1;
+            }
+
+            for (var i = 0; i < array.length; i++) {
+                var entry = array[i],
+                    matches = entry.match(regex);
+
+                if (matches && matches.length) {
+                    return i;
+                }
+            }
+
+            return -1;
+        };
+
+        /**
+         * Given an array of strings, return only the ones that match a regular expression.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#filterByRegexp
+         * @param  {String[]} array Array to filter.
+         * @param  {RegExp} regex   RegExp to apply to each string.
+         * @return {String[]}       Filtered array.
+         */
+        self.filterByRegexp = function(array, regex) {
+            if (!array || !array.length) {
+                return [];
+            }
+
+            return array.filter(function(entry) {
+                var matches = entry.match(regex);
+                return matches && matches.length;
+            });
+        };
+
+        /**
+         * Filters the undefined items that can be in an array.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#filterUndefinedItemsInArray
+         * @param  {Array} items  With all the items.
+         * @return {Array}        Only with the defined items,
+         */
+        self.filterUndefinedItemsInArray = function(items) {
+            return items.filter(function(item) {
+                return typeof item != "undefined";
+            });
+        };
+
+        /**
+         * Retrieve the information entered in a form.
+         * We don't use ng-model because it doesn't detect changes done by JavaScript.
+         *
+         * @module mm.core
+         * @ngdoc method
+         * @name $mmUtil#getInfoValuesFromForm
+         * @param  {Object} form Form (DOM element).
+         * @return {Object}      Object with the info values.
+         */
+        self.getInfoValuesFromForm = function(form) {
+            if (!form || !form.elements) {
+                return {};
+            }
+
+            var formData = {},
+                simpleCheckboxes = {};
+
+            angular.forEach(form.elements, function(element) {
+                var name = element.name || '';
+                // Ignore submit inputs.
+                if (element.type == 'submit' || element.tagName == 'BUTTON') {
+                    return;
+                }
+                if (!name) {
+                    $log.debug('Form element without name.', element);
+                    return;
+                }
+
+                // Get the value.
+                switch (element.type) {
+                    case 'checkbox':
+                        if (typeof simpleCheckboxes[name] == "undefined") {
+                           simpleCheckboxes[name] = {};
+                        }
+                        simpleCheckboxes[name][element.value] = !!element.checked;
+                        break;
+                    case 'radio':
+                        if (element.checked) {
+                            formData[name] = element.value;
+                        }
+                        break;
+                    default:
+                        formData[name] = element.value;
+                }
+            });
+
+            angular.forEach(simpleCheckboxes, function(checkbox, name) {
+                var keys = Object.keys(checkbox);
+                // Single standard checkbox without real value.
+                if (keys.length == 1 && keys[0] == "on") {
+                    formData[name] = checkbox.on;
+                } else {
+                    formData[name] = checkbox;
+                }
+            });
+
+            return formData;
         };
 
         return self;
