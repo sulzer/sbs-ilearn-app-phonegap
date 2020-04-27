@@ -23,7 +23,7 @@
     <allow-intent href="geo:*" />
 
     <preference name="orientation" value="default" />
-
+    <preference name="phonegap-version" value="cli-7.1.0" />
 	<preference name="android-minSdkVersion" value="19" />
     <preference name="target-device" value="universal" />
     <preference name="fullscreen" value="false" />
